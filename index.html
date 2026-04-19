@@ -2,64 +2,198 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sexto TV | Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sexto TV | OmeTV Clone</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* Contenedor de Video */
-        .main-container { display: flex; flex: 1; position: relative; background: #000; }
-        video { width: 50%; height: 100%; object-fit: cover; background: #111; border-right: 1px solid #222; }
-        #localVideo { transform: scaleX(-1); }
+        /* Estilos base: Fondo gris oscuro tipo web moderna */
+        body { 
+            margin: 0; 
+            background: #2b2b2b; 
+            color: #fff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
 
-        /* Capa del Chat sobre el video */
-        #chat-container {
-            position: absolute;
-            bottom: 120px;
-            left: 20px;
-            width: 300px;
-            height: 200px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
+        /* Top Bar simulada */
+        .top-bar {
+            height: 50px;
+            background: #1e1e1e;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffa500; /* Color naranja tipo OmeTV */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
             z-index: 10;
         }
-        #messages { flex: 1; overflow-y: auto; padding: 10px; font-size: 14px; display: flex; flex-direction: column; }
-        .msg { background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 10px; margin-bottom: 5px; width: fit-content; }
-        #chat-input { background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px; border-radius: 0 0 10px 10px; outline: none; }
+        .top-bar span { color: white; margin-left: 5px; }
 
-        /* Barra Inferior */
-        .footer { height: 100px; background: #1c1c1e; display: flex; align-items: center; justify-content: center; gap: 15px; border-top: 1px solid #333; }
-        .btn { border: none; border-radius: 12px; padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; }
-        .btn-next { background: #34c759; }
-        .btn-stop { background: #ff3b30; }
-        .btn-report { background: #ff9500; padding: 15px 20px; }
+        /* Contenedor principal: Izquierda (Extraño) y Derecha (Tú + Chat) */
+        .main-workspace {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+            padding: 10px;
+            gap: 10px;
+            background: #2b2b2b;
+        }
 
-        /* Info Superior */
-        #status-box { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 30px; font-size: 14px; z-index: 100; }
-        #user-count { position: absolute; top: 20px; right: 20px; background: rgba(52, 199, 89, 0.8); padding: 10px 20px; border-radius: 30px; font-size: 14px; z-index: 100; }
+        /* Lado Izquierdo: Video grande */
+        .remote-column {
+            flex: 2.5; /* Ocupa más espacio */
+            background: #000;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Lado Derecho: Tu video y el chat */
+        .local-chat-column {
+            flex: 1; /* Ocupa menos espacio */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .local-video-box {
+            flex: 1;
+            background: #000;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .chat-box {
+            flex: 1.5; /* El chat es un poco más alto que tu video */
+            background: #fff;
+            color: #000;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        video { width: 100%; height: 100%; object-fit: cover; background: #111; }
+        #localVideo { transform: scaleX(-1); }
+
+        /* Estructura del Chat */
+        #messages { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px; 
+            font-size: 14px; 
+            background: #f5f5f5;
+        }
+        .msg { margin-bottom: 8px; line-height: 1.4; }
+        .msg span { font-weight: bold; color: #007bff; }
+        .msg-stranger span { color: #ff3b30; }
+
+        .chat-input-area {
+            display: flex;
+            border-top: 1px solid #ccc;
+        }
+        #chat-input { 
+            flex: 1; 
+            border: none; 
+            padding: 12px; 
+            outline: none; 
+            font-size: 14px;
+        }
+        .btn-send {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Barra Inferior OmeTV */
+        .bottom-bar {
+            height: 80px;
+            background: #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 4px;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: 0.1s;
+        }
+        .btn:active { transform: translateY(2px); }
+        .btn-stop { background: #555; } /* Gris como en la original */
+        .btn-report { background: #ff3b30; padding: 15px 20px; font-size: 14px; }
+        .btn-next { background: #007bff; font-size: 18px; padding: 15px 60px; } /* Azul llamativo */
+
+        /* Etiquetas flotantes */
+        .watermark { position: absolute; top: 10px; left: 10px; color: rgba(255,255,255,0.6); font-size: 24px; font-weight: bold; pointer-events: none; z-index: 2; }
+        .status-badge { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 4px; font-size: 12px; z-index: 2; }
+
+        /* =========================================
+           VERSIÓN PARA CELULARES (Mobile Responsiveness)
+           ========================================= */
+        @media (max-width: 768px) {
+            .main-workspace { flex-direction: column; padding: 5px; gap: 5px; }
+            .remote-column { flex: 2; }
+            .local-chat-column { flex: 2; flex-direction: row; gap: 5px; }
+            .local-video-box { flex: 1; }
+            .chat-box { flex: 1.5; }
+            .btn { padding: 15px 20px; font-size: 14px; }
+            .btn-next { padding: 15px 30px; }
+            .watermark { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="status-box">🔴 Iniciando...</div>
-    <div id="user-count">👥 Usuarios: 0</div>
+    <div class="top-bar">Ome<span>TV</span></div>
 
-    <div class="main-container">
-        <video id="remoteVideo" autoplay playsinline></video>
-        <video id="localVideo" autoplay muted playsinline></video>
+    <div class="main-workspace">
         
-        <div id="chat-container">
-            <div id="messages"></div>
-            <input type="text" id="chat-input" placeholder="Escribe un mensaje..." onkeypress="enviarChat(event)">
+        <div class="remote-column">
+            <div class="watermark">OmeTV</div>
+            <div class="status-badge" id="status-box">🔴 Esperando que inicies...</div>
+            <video id="remoteVideo" autoplay playsinline></video>
         </div>
+
+        <div class="local-chat-column">
+            <div class="local-video-box">
+                <video id="localVideo" autoplay muted playsinline></video>
+            </div>
+            <div class="chat-box">
+                <div id="messages">
+                    <div class="msg"><span>Sistema:</span> Bienvenido. Pulsa SIGUIENTE para buscar a alguien.</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Escribe un mensaje..." onkeypress="teclaEnter(event)">
+                    <button class="btn-send" onclick="enviarMensaje()">➤</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="footer">
-        <button class="btn btn-stop" onclick="location.reload()">STOP</button>
+    <div class="bottom-bar">
+        <button class="btn btn-stop" onclick="detener()">STOP</button>
         <button class="btn btn-next" onclick="buscarSiguiente()">SIGUIENTE</button>
         <button class="btn btn-report" onclick="reportar()">REPORTAR</button>
     </div>
@@ -71,6 +205,7 @@
         const canalChat = ably.channels.get('recreo-chat');
         
         let peer, localStream, currentCall;
+        const statusBox = document.getElementById('status-box');
 
         async function iniciar() {
             try {
@@ -79,8 +214,7 @@
                 peer = new Peer();
                 
                 peer.on('open', (id) => {
-                    document.getElementById('status-box').innerText = "🟢 En línea";
-                    actualizarContador();
+                    statusBox.innerText = "🟢 Conectado a la red";
                 });
 
                 peer.on('call', (call) => {
@@ -88,31 +222,28 @@
                     currentCall = call;
                     call.answer(localStream);
                     call.on('stream', (s) => document.getElementById('remoteVideo').srcObject = s);
+                    statusBox.innerText = "🤝 Estás hablando con un extraño";
                 });
 
                 canalMatch.subscribe('buscando', (msg) => {
                     if (msg.data.peerId !== peer.id && !currentCall) llamarA(msg.data.peerId);
                 });
 
-                // Escuchar chat
                 canalChat.subscribe('mensaje', (msg) => {
-                    mostrarMensaje(msg.data.texto);
+                    // Solo mostramos el mensaje si no fuimos nosotros quienes lo enviamos
+                    if(msg.clientId !== ably.auth.clientId) {
+                        imprimirMensaje("Extraño", msg.data.texto, true);
+                    }
                 });
 
-            } catch (err) { alert("Activa la cámara"); }
-        }
-
-        function actualizarContador() {
-            canalMatch.presence.get((err, members) => {
-                document.getElementById('user-count').innerText = "👥 Usuarios: " + (members ? members.length : 1);
-            });
-            canalMatch.presence.enter();
+            } catch (err) { statusBox.innerText = "❌ Error: Activa la cámara"; }
         }
 
         function buscarSiguiente() {
             if (currentCall) currentCall.close();
             document.getElementById('remoteVideo').srcObject = null;
-            document.getElementById('messages').innerHTML = "";
+            document.getElementById('messages').innerHTML = '<div class="msg"><span>Sistema:</span> Buscando alguien...</div>';
+            statusBox.innerText = "🔍 Buscando compañero...";
             canalMatch.publish('buscando', { peerId: peer.id });
         }
 
@@ -120,31 +251,40 @@
             const call = peer.call(id, localStream);
             call.on('stream', (s) => {
                 document.getElementById('remoteVideo').srcObject = s;
+                statusBox.innerText = "🤝 Conectado";
                 currentCall = call;
             });
         }
 
-        function enviarChat(e) {
-            if (e.key === 'Enter') {
-                const input = document.getElementById('chat-input');
-                if (input.value.trim() !== "") {
-                    canalChat.publish('mensaje', { texto: input.value });
-                    input.value = "";
-                }
+        function teclaEnter(e) { if (e.key === 'Enter') enviarMensaje(); }
+
+        function enviarMensaje() {
+            const input = document.getElementById('chat-input');
+            const texto = input.value.trim();
+            if (texto !== "" && currentCall) {
+                canalChat.publish('mensaje', { texto: texto });
+                imprimirMensaje("Tú", texto, false);
+                input.value = "";
+            } else if (!currentCall) {
+                alert("Debes estar conectado con alguien para chatear.");
             }
         }
 
-        function mostrarMensaje(t) {
+        function imprimirMensaje(quien, texto, esExtrano) {
             const m = document.getElementById('messages');
-            const div = document.createElement('div');
-            div.className = 'msg';
-            div.innerText = t;
-            m.appendChild(div);
+            const clase = esExtrano ? 'msg-stranger' : '';
+            m.innerHTML += `<div class="msg ${clase}"><span>${quien}:</span> ${texto}</div>`;
             m.scrollTop = m.scrollHeight;
         }
 
+        function detener() {
+            if (currentCall) currentCall.close();
+            document.getElementById('remoteVideo').srcObject = null;
+            statusBox.innerText = "⏹️ Desconectado";
+        }
+
         function reportar() {
-            alert("Usuario reportado. Buscando a alguien más...");
+            alert("Usuario reportado.");
             buscarSiguiente();
         }
 
