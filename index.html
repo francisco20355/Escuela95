@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AsdTV nuevas actualizaciones</title>
+    <title>AsdTV | Edición Global Pro</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
@@ -14,10 +13,13 @@
         :root {
             --primary: #007bff;
             --danger: #ff3b30;
-            --dark: #121212;
+            --dark: #0a0a0a;
             --accent: #ffa500;
-            --gray: #1e1e1e;
+            --gray: #1a1a1a;
+            --glass: rgba(255, 255, 255, 0.1);
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body { 
             margin: 0; 
@@ -30,340 +32,402 @@
             overflow: hidden; 
         }
 
-        /* --- NUEVO: ESTILOS DE RACHA --- */
-        .racha-container {
-            position: absolute; top: 75px; right: 15px; padding: 8px 18px; border-radius: 25px;
-            font-weight: bold; display: flex; align-items: center; gap: 8px; z-index: 20;
-            transition: all 0.5s ease; border: 2px solid rgba(255,255,255,0.2); color: white;
-        }
-        .lvl-bronce { background: #cd7f32; box-shadow: 0 0 10px #cd7f32; }
-        .lvl-plata { background: #c0c0c0; color: #333; box-shadow: 0 0 15px #fff; }
-        .lvl-oro { background: #ffd700; color: #442200; box-shadow: 0 0 20px #ffd700; }
-        .lvl-diamante { background: #00d4ff; box-shadow: 0 0 25px #00d4ff; }
-        .lvl-esmeralda { background: #2ecc71; box-shadow: 0 0 30px #2ecc71; }
-        .lvl-maestro { background: #9b59b6; box-shadow: 0 0 35px #9b59b6; }
-        .lvl-leyenda { 
-            background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff, #00ffff);
-            background-size: 300% 300%; animation: grad 2s infinite alternate;
-            box-shadow: 0 0 50px #ff00ff; border: 3px solid #fff; transform: scale(1.1);
-        }
-        @keyframes grad { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-        /* ------------------------------ */
-
+        /* --- BARRA SUPERIOR PROFESIONAL --- */
         .top-bar {
-            height: 60px;
+            height: 65px;
             background: var(--gray);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 20px;
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--accent);
-            border-bottom: 1px solid #333;
-            z-index: 10;
+            border-bottom: 2px solid #333;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .top-bar span { color: white; margin-left: 5px; }
 
-        .video-container {
+        .brand { display: flex; align-items: center; gap: 8px; }
+        .brand h1 { font-size: 20px; margin: 0; color: var(--accent); letter-spacing: 1px; }
+        .brand span { font-size: 10px; background: var(--primary); padding: 2px 6px; border-radius: 4px; color: white; }
+
+        /* CONTENEDOR DE RACHA DINÁMICO */
+        .racha-ui {
             display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            border: 1px solid var(--glass);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* ESTADOS DE LA RACHA */
+        .lvl-bronce { background: linear-gradient(45deg, #cd7f32, #8b4513); color: white; }
+        .lvl-plata { background: linear-gradient(45deg, #bdc3c7, #2c3e50); color: white; }
+        .lvl-oro { background: linear-gradient(45deg, #f1c40f, #f39c12); color: black; box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+        .lvl-diamante { background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: white; box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); }
+        .lvl-leyenda { 
+            background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff, #00ffff);
+            background-size: 400% 400%;
+            animation: hyper-gradient 3s ease infinite;
+            border: 2px solid #fff;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        @keyframes hyper-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- VIDEO LAYOUT --- */
+        .main-stage {
             flex: 1;
+            display: flex;
             flex-direction: row;
             background: #000;
-            min-height: 0;
-            gap: 2px;
+            gap: 4px;
+            padding: 4px;
         }
 
-        .video-box {
+        .video-wrapper {
             flex: 1;
             position: relative;
-            overflow: hidden;
             background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            background: #000;
-            transition: transform 0.3s ease;
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
         }
 
-        #localVideo { transform: scaleX(-1); border-left: 2px solid var(--gray); }
+        #localVideo { transform: scaleX(-1); border: 1px solid #222; }
 
-        .loader-overlay {
+        /* UI OVERLAYS */
+        .overlay-label {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            backdrop-filter: blur(4px);
+            z-index: 5;
+        }
+
+        .connection-status {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,0,0,0.7);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            border: 1px solid var(--glass);
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
+        .dot.online { background: #4cd964; box-shadow: 0 0 10px #4cd964; }
+
+        /* LOADING SPINNER */
+        .searching-layer {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 5;
+            z-index: 20;
+            text-align: center;
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255,255,255,0.1);
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .bottom-bar {
-            height: 100px;
+        .spinner-pro {
+            width: 45px;
+            height: 45px;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-bottom-color: var(--accent);
+            border-radius: 50%;
+            animation: spin-triple 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        @keyframes spin-triple { 100% { transform: rotate(360deg); } }
+
+        /* --- CONTROL BAR --- */
+        .controls {
+            height: 110px;
             background: var(--gray);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 0 10px;
+            gap: 12px;
+            padding: 0 15px;
             border-top: 1px solid #333;
         }
 
-        .btn {
+        .action-btn {
             border: none;
-            border-radius: 12px;
-            height: 60px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            color: white;
-            transition: all 0.2s;
+            border-radius: 16px;
+            height: 65px;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            color: white;
+            font-family: inherit;
         }
-        .btn:active { transform: scale(0.95); }
 
-        .btn-stop { background: #3a3a3a; width: 60px; }
-        .btn-util { background: #444; width: 60px; font-size: 20px; }
-        .btn-report { background: var(--danger); width: 60px; font-size: 18px; }
-        .btn-next { background: var(--primary); flex: 1; font-size: 18px; box-shadow: 0 4px 15px rgba(0,123,255,0.3); }
-        .btn-util.active { background: var(--accent); }
+        .btn-round { width: 65px; background: #2a2a2a; font-size: 22px; }
+        .btn-round:active { transform: scale(0.9); background: #333; }
+        
+        .btn-main {
+            flex: 1;
+            background: var(--primary);
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        }
 
-        .watermark { position: absolute; top: 15px; left: 15px; color: rgba(255,255,255,0.4); font-size: 14px; font-weight: bold; text-transform: uppercase; }
-        .status-badge { position: absolute; bottom: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 20px; font-size: 11px; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-danger { background: var(--danger); width: 65px; font-size: 20px; }
 
+        /* MOBILE ADJUSTMENTS */
         @media (max-width: 768px) {
-            .video-container { flex-direction: column; }
-            .bottom-bar { height: 110px; padding-bottom: 20px; }
+            .main-stage { flex-direction: column; }
+            .controls { height: 130px; padding-bottom: 30px; }
+            .racha-ui { padding: 4px 10px; font-size: 13px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">Asd<span>TV</span></div>
+    <header class="top-bar">
+        <div class="brand">
+            <h1>AsdTV</h1>
+            <span>PRO</span>
+        </div>
+        
+        <div id="racha-master" class="racha-ui lvl-bronce">
+            <span id="racha-icon">🔥</span>
+            <span id="racha-val">0</span>
+        </div>
+    </header>
 
-    <div class="racha-container lvl-bronce" id="racha-ui">
-        <span id="racha-icono">🔥</span> <span>Racha:</span> <span id="racha-numero">0</span>
-    </div>
-
-    <div class="video-container">
-        <div class="video-box">
-            <div class="loader-overlay" id="loader">
-                <div class="spinner"></div>
-                <span>Buscando compañero...</span>
+    <main class="main-stage">
+        <div class="video-wrapper">
+            <div class="searching-layer" id="search-ui">
+                <div class="spinner-pro"></div>
+                <p style="margin-top:15px; font-size:12px; opacity:0.7;">Escaneando servidores...</p>
             </div>
-            <div class="watermark">Remoto</div>
-            <div class="status-badge" id="status-box">🔴 Desconectado</div>
-            <video id="remoteVideo" autoplay playsinline></video>
+            <div class="overlay-label">En Vivo</div>
+            <video id="remote-feed" autoplay playsinline></video>
+            <div class="connection-status">
+                <div class="dot" id="status-dot"></div>
+                <span id="status-text">ESPERANDO</span>
+            </div>
         </div>
 
-        <div class="video-box">
-            <div class="watermark">TÚ</div>
-            <video id="localVideo" autoplay muted playsinline></video>
+        <div class="video-wrapper">
+            <div class="overlay-label" style="background: var(--primary);">Tú</div>
+            <video id="local-feed" autoplay muted playsinline></video>
         </div>
-    </div>
+    </main>
 
-    <div class="bottom-bar">
-        <button class="btn btn-stop" onclick="detener()">OFF</button>
-        <button class="btn btn-util" id="muteBtn" onclick="toggleMute()">🎤</button>
-        <button class="btn btn-util" onclick="switchCamera()">🔄</button>
-        <button class="btn btn-next" onclick="buscarSiguiente()">SIGUIENTE</button>
-        <button class="btn btn-report" onclick="reportar()">⚠️</button>
-    </div>
+    <nav class="controls">
+        <button class="action-btn btn-round" onclick="muteHandler()" id="m-btn">🎤</button>
+        <button class="action-btn btn-round" onclick="cameraFlip()">🔄</button>
+        <button class="action-btn btn-main" onclick="nextPeer()">Siguiente</button>
+        <button class="action-btn btn-danger" onclick="sendReport()">⚠️</button>
+    </nav>
 
     <script>
-        const ABLY_KEY = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs'; 
+        /**
+         * CONFIGURACIÓN GLOBAL
+         * AsdTV PRO - Lógica de Racha y Conectividad
+         */
+        const ABLY_KEY = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
         const ably = new Ably.Realtime(ABLY_KEY);
-        const canalMatch = ably.channels.get('recreo-match');
+        const matchChannel = ably.channels.get('recreo-match');
         
-        let peer, localStream, currentCall;
-        let listaNegra = [];
-        let isMuted = false;
-        let currentFacingMode = 'user';
+        let p2p, streamIn, activeCall;
+        let blackList = [];
+        let muted = false;
+        let camMode = 'user';
 
-        const statusBox = document.getElementById('status-box');
-        const loader = document.getElementById('loader');
+        // Lógica de Persistencia
+        let rachaCount = parseInt(localStorage.getItem('_atv_streak')) || 0;
+        let lastSeen = localStorage.getItem('_atv_ts');
 
-        // --- NUEVA LÓGICA DE RACHA PERSISTENTE ---
-        let contadorRacha = parseInt(localStorage.getItem('rachaAsdTV')) || 0;
-        let ultimaActividad = localStorage.getItem('ultimaConexionAsdTV');
+        /**
+         * GESTOR DE RACHA: El corazón del sistema
+         */
+        function validateStreak() {
+            if (lastSeen && rachaCount > 0) {
+                const now = new Date();
+                const hr = now.getHours();
+                // Ventana de protección nocturna (00:00 a 08:00)
+                if (hr >= 0 && hr < 8) return;
 
-        function verificarVencimiento() {
-            if (ultimaActividad && contadorRacha > 0) {
-                const ahora = new Date();
-                const horaActual = ahora.getHours();
-                // Tregua nocturna: de 00:00 a 08:00 no se resetea
-                if (horaActual >= 0 && horaActual < 8) return; 
-
-                const tiempoLimite = 4 * 60 * 60 * 1000; // 4 Horas
-                if (ahora.getTime() - parseInt(ultimaActividad) > tiempoLimite) {
-                    contadorRacha = 0;
-                    localStorage.setItem('rachaAsdTV', 0);
+                const diff = now.getTime() - parseInt(lastSeen);
+                if (diff > (4 * 60 * 60 * 1000)) { // 4 Horas limite
+                    rachaCount = 0;
+                    saveState();
                 }
             }
         }
 
-        function actualizarVisualRacha() {
-            const ui = document.getElementById('racha-ui');
-            const icono = document.getElementById('racha-icono');
-            const num = document.getElementById('racha-numero');
-
-            localStorage.setItem('rachaAsdTV', contadorRacha);
-            localStorage.setItem('ultimaConexionAsdTV', new Date().getTime());
-
-            ui.className = 'racha-container';
-            if (contadorRacha >= 150) { ui.classList.add('lvl-leyenda'); icono.innerText = "🌌"; }
-            else if (contadorRacha >= 111) { ui.classList.add('lvl-maestro'); icono.innerText = "🔮"; }
-            else if (contadorRacha >= 81) { ui.classList.add('lvl-esmeralda'); icono.innerText = "💎"; }
-            else if (contadorRacha >= 51) { ui.classList.add('lvl-diamante'); icono.innerText = "❄️"; }
-            else if (contadorRacha >= 31) { ui.classList.add('lvl-oro'); icono.innerText = "👑"; }
-            else if (contadorRacha >= 11) { ui.classList.add('lvl-plata'); icono.innerText = "✨"; }
-            else { ui.classList.add('lvl-bronce'); icono.innerText = "🔥"; }
-            num.innerText = contadorRacha;
+        function saveState() {
+            localStorage.setItem('_atv_streak', rachaCount);
+            localStorage.setItem('_atv_ts', new Date().getTime());
+            renderRacha();
         }
-        // -----------------------------------------
 
-        async function iniciar() {
-            verificarVencimiento(); // Revisar racha al abrir
-            actualizarVisualRacha(); // Dibujar racha inicial
+        function renderRacha() {
+            const box = document.getElementById('racha-master');
+            const icon = document.getElementById('racha-icon');
+            const val = document.getElementById('racha-val');
+            
+            box.className = 'racha-ui';
+            if (rachaCount >= 150) { box.classList.add('lvl-leyenda'); icon.innerText = "🌌"; }
+            else if (rachaCount >= 111) { box.classList.add('lvl-maestro'); icon.innerText = "🔮"; }
+            else if (rachaCount >= 81) { box.classList.add('lvl-esmeralda'); icon.innerText = "💎"; }
+            else if (rachaCount >= 51) { box.classList.add('lvl-diamante'); icon.innerText = "❄️"; }
+            else if (rachaCount >= 31) { box.classList.add('lvl-oro'); icon.innerText = "👑"; }
+            else if (rachaCount >= 11) { box.classList.add('lvl-plata'); icon.innerText = "✨"; }
+            else { box.classList.add('lvl-bronce'); icon.innerText = "🔥"; }
+            
+            val.innerText = rachaCount;
+        }
+
+        /**
+         * SISTEMA DE VIDEO Y LLAMADAS
+         */
+        async function bootApp() {
+            validateStreak();
+            renderRacha();
+            
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: currentFacingMode }, 
+                streamIn = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: camMode }, 
                     audio: true 
                 });
-                document.getElementById('localVideo').srcObject = localStream;
+                document.getElementById('local-feed').srcObject = streamIn;
                 
-                peer = new Peer();
+                p2p = new Peer();
                 
-                peer.on('open', (id) => {
-                    statusBox.innerText = "🟢 Sistema Listo";
+                p2p.on('open', (id) => {
+                    console.log('ID Peer Generado:', id);
+                    document.getElementById('status-dot').classList.add('online');
+                    document.getElementById('status-text').innerText = "SISTEMA LISTO";
                 });
 
-                peer.on('call', (call) => {
-                    if (currentCall) finalizarLlamada();
-                    if (listaNegra.includes(call.peer)) return;
-                    currentCall = call;
-                    call.answer(localStream);
-                    gestionarLlamada(call);
+                p2p.on('call', (incoming) => {
+                    if (blackList.includes(incoming.peer)) return;
+                    if (activeCall) closeSession();
+                    activeCall = incoming;
+                    incoming.answer(streamIn);
+                    handlePipeline(incoming);
                 });
 
-                canalMatch.subscribe('buscando', (msg) => {
-                    if (msg.data.peerId !== peer.id && !currentCall && !listaNegra.includes(msg.data.peerId)) {
-                        llamarA(msg.data.peerId);
+                matchChannel.subscribe('buscando', (msg) => {
+                    if (msg.data.pid !== p2p.id && !activeCall && !blackList.includes(msg.data.pid)) {
+                        requestPeer(msg.data.pid);
                     }
                 });
 
             } catch (err) {
-                statusBox.innerText = "❌ Error de Cámara";
+                alert("Error: Revisa los permisos de cámara.");
             }
         }
 
-        function gestionarLlamada(call) {
-            loader.style.display = 'none';
-            call.on('stream', (s) => {
-                document.getElementById('remoteVideo').srcObject = s;
-                statusBox.innerText = "🤝 En línea";
-                
-                // NUEVO: Sumar racha al conectar con alguien
-                contadorRacha++;
-                actualizarVisualRacha();
+        function requestPeer(targetId) {
+            const call = p2p.call(targetId, streamIn);
+            activeCall = call;
+            handlePipeline(call);
+        }
+
+        function handlePipeline(call) {
+            document.getElementById('search-ui').style.display = 'none';
+            call.on('stream', (remoteStream) => {
+                document.getElementById('remote-feed').srcObject = remoteStream;
+                document.getElementById('status-text').innerText = "EN LÍNEA";
+                rachaCount++;
+                saveState();
             });
-            call.on('close', () => finalizarLlamada());
-            call.on('error', () => finalizarLlamada());
+            call.on('close', () => closeSession());
+            call.on('error', () => closeSession());
         }
 
-        function llamarA(id) {
-            const call = peer.call(id, localStream);
-            currentCall = call;
-            gestionarLlamada(call);
-        }
-
-        function buscarSiguiente() {
-            if (currentCall) {
-                const anteriorId = currentCall.peer;
-                listaNegra.push(anteriorId);
-                setTimeout(() => {
-                    listaNegra = listaNegra.filter(id => id !== anteriorId);
-                }, 10000);
-                finalizarLlamada();
+        function nextPeer() {
+            if (activeCall) {
+                const pId = activeCall.peer;
+                blackList.push(pId);
+                setTimeout(() => { blackList = blackList.filter(i => i !== pId); }, 15000);
+                closeSession();
             }
-            loader.style.display = 'flex';
-            statusBox.innerText = "🔍 Buscando...";
-            canalMatch.publish('buscando', { peerId: peer.id });
+            document.getElementById('search-ui').style.display = 'flex';
+            matchChannel.publish('buscando', { pid: p2p.id });
         }
 
-        async function switchCamera() {
-            if (!localStream) return;
-            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+        /**
+         * UTILIDADES DE HARDWARE
+         */
+        async function cameraFlip() {
+            camMode = (camMode === 'user') ? 'environment' : 'user';
+            streamIn.getTracks().forEach(t => t.stop());
             
-            const videoTrackOld = localStream.getVideoTracks()[0];
-            videoTrackOld.stop();
-
             try {
-                const nuevoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: currentFacingMode },
-                    audio: true
-                });
-
-                const videoTrackNew = nuevoStream.getVideoTracks()[0];
-                localStream.removeTrack(videoTrackOld);
-                localStream.addTrack(videoTrackNew);
-
-                const localVid = document.getElementById('localVideo');
-                localVid.srcObject = localStream;
-                localVid.style.transform = (currentFacingMode === 'user') ? "scaleX(-1)" : "scaleX(1)";
-
-                if (currentCall && currentCall.peerConnection) {
-                    const sender = currentCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-                    if (sender) sender.replaceTrack(videoTrackNew);
+                streamIn = await navigator.mediaDevices.getUserMedia({ video: { facingMode: camMode }, audio: true });
+                document.getElementById('local-feed').srcObject = streamIn;
+                document.getElementById('local-feed').style.transform = (camMode === 'user') ? "scaleX(-1)" : "scaleX(1)";
+                
+                if (activeCall && activeCall.peerConnection) {
+                    const sender = activeCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                    sender.replaceTrack(streamIn.getVideoTracks()[0]);
                 }
-                statusBox.innerText = "📷 Cámara Switcheada";
-            } catch (e) {
-                alert("No se pudo cambiar de cámara");
-            }
+            } catch (e) { console.error("Error Switch Cam"); }
         }
 
-        function toggleMute() {
-            isMuted = !isMuted;
-            localStream.getAudioTracks()[0].enabled = !isMuted;
-            const btn = document.getElementById('muteBtn');
-            btn.classList.toggle('active');
-            btn.innerText = isMuted ? "🔇" : "🎤";
+        function muteHandler() {
+            muted = !muted;
+            streamIn.getAudioTracks()[0].enabled = !muted;
+            document.getElementById('m-btn').innerText = muted ? "🔇" : "🎤";
+            document.getElementById('m-btn').style.background = muted ? "var(--danger)" : "#2a2a2a";
         }
 
-        function finalizarLlamada() {
-            if (currentCall) currentCall.close();
-            currentCall = null;
-            document.getElementById('remoteVideo').srcObject = null;
-            statusBox.innerText = "🔴 Desconectado";
-            loader.style.display = 'none';
+        function closeSession() {
+            if (activeCall) activeCall.close();
+            activeCall = null;
+            document.getElementById('remote-feed').srcObject = null;
+            document.getElementById('status-text').innerText = "DESCONECTADO";
         }
 
-        function detener() {
-            finalizarLlamada();
-            statusBox.innerText = "⏹️ App en Pausa";
+        function sendReport() {
+            alert("Usuario reportado. Buscando nuevo compañero...");
+            nextPeer();
         }
 
-        function reportar() {
-            alert("Usuario reportado.");
-            buscarSiguiente();
-        }
-
-        iniciar();
+        // Ejecución inicial
+        bootApp();
     </script>
 </body>
-</html>
+                                                                          </html>
