@@ -3,99 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sexto TV | Simétrico</title>
+    <title>Sexto TV | Pro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
     <style>
-        /* Ajuste para que ocupe el 100% de la pantalla real del celular */
+        :root {
+            --primary: #007bff;
+            --danger: #ff3b30;
+            --dark: #121212;
+            --accent: #ffa500;
+            --gray: #1e1e1e;
+        }
+
         body { 
             margin: 0; 
-            background: #000; 
+            background: var(--dark); 
             color: #fff; 
-            font-family: sans-serif; 
+            font-family: 'Poppins', sans-serif; 
             display: flex; 
             flex-direction: column; 
             height: 100dvh; 
             overflow: hidden; 
         }
 
-        /* Barra superior tipo OmeTV */
+        /* Barra superior */
         .top-bar {
-            height: 50px;
-            background: #1e1e1e;
+            height: 60px;
+            background: var(--gray);
             display: flex;
             align-items: center;
             padding: 0 20px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #ffa500;
-            flex-shrink: 0;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 1px solid #333;
             z-index: 10;
         }
         .top-bar span { color: white; margin-left: 5px; }
 
-        /* Contenedor de videos: 50/50 */
+        /* Contenedor de videos */
         .video-container {
             display: flex;
             flex: 1;
-            flex-direction: row; /* Horizontal en PC */
+            flex-direction: row;
             background: #000;
             min-height: 0;
+            gap: 2px;
         }
 
         .video-box {
             flex: 1;
             position: relative;
             overflow: hidden;
-            border: 1px solid #222;
+            background: #111;
         }
 
         video { 
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
-            background: #111; 
+            background: #000;
         }
 
-        /* Tu cámara con efecto espejo */
-        #localVideo { transform: scaleX(-1); }
+        #localVideo { transform: scaleX(-1); border-left: 2px solid var(--gray); }
 
-        /* Barra de botones inferior */
+        /* Capa de carga (Loader) */
+        .loader-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.1);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Botones inferiores */
         .bottom-bar {
-            height: 90px;
-            background: #1e1e1e;
+            height: 100px;
+            background: var(--gray);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             padding: 0 15px;
-            flex-shrink: 0;
+            border-top: 1px solid #333;
         }
 
         .btn {
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             height: 60px;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             color: white;
-            text-transform: uppercase;
-            flex: 1;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn-stop { background: #555; max-width: 100px; }
-        .btn-report { background: #ff3b30; max-width: 100px; }
-        .btn-next { background: #007bff; font-size: 20px; flex: 2; }
+        .btn:active { transform: scale(0.95); }
 
-        /* Marcas de agua y estado */
-        .watermark { position: absolute; top: 15px; left: 15px; color: rgba(255,255,255,0.5); font-size: 20px; font-weight: bold; pointer-events: none; }
-        .status-badge { position: absolute; bottom: 15px; left: 15px; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 4px; font-size: 12px; }
+        .btn-stop { background: #3a3a3a; width: 70px; }
+        .btn-report { background: var(--danger); width: 70px; }
+        .btn-mute { background: #444; width: 70px; }
+        .btn-next { background: var(--primary); flex: 1; font-size: 18px; box-shadow: 0 4px 15px rgba(0,123,255,0.3); }
+        .btn-mute.active { background: var(--accent); }
 
-        /* AJUSTE PARA CELULARES (Videos uno arriba del otro) */
+        /* Etiquetas */
+        .watermark { position: absolute; top: 15px; left: 15px; color: rgba(255,255,255,0.4); font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .status-badge { position: absolute; bottom: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 20px; font-size: 11px; border: 1px solid rgba(255,255,255,0.1); }
+
         @media (max-width: 768px) {
             .video-container { flex-direction: column; }
-            .btn { font-size: 14px; height: 55px; }
-            .btn-next { font-size: 18px; }
+            .bottom-bar { height: 110px; padding-bottom: 20px; }
         }
     </style>
 </head>
@@ -105,7 +142,11 @@
 
     <div class="video-container">
         <div class="video-box">
-            <div class="watermark">AsdTV</div>
+            <div class="loader-overlay" id="loader">
+                <div class="spinner"></div>
+                <span>Buscando compañero...</span>
+            </div>
+            <div class="watermark">Remoto</div>
             <div class="status-badge" id="status-box">🔴 Desconectado</div>
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
@@ -117,84 +158,123 @@
     </div>
 
     <div class="bottom-bar">
-        <button class="btn btn-stop" onclick="detener()">STOP</button>
+        <button class="btn btn-stop" onclick="detener()" title="Detener">OFF</button>
+        <button class="btn btn-mute" id="muteBtn" onclick="toggleMute()">🎤</button>
         <button class="btn btn-next" onclick="buscarSiguiente()">SIGUIENTE</button>
-        <button class="btn btn-report" onclick="reportar()">REPORTAR</button>
+        <button class="btn btn-report" onclick="reportar()">⚠️</button>
     </div>
 
     <script>
-        // Configuración de Ably y PeerJS
         const ABLY_KEY = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs'; 
         const ably = new Ably.Realtime(ABLY_KEY);
         const canalMatch = ably.channels.get('recreo-match');
         
         let peer, localStream, currentCall;
+        let listaNegra = []; // Para evitar repetición inmediata
+        let isMuted = false;
+
         const statusBox = document.getElementById('status-box');
+        const loader = document.getElementById('loader');
 
         async function iniciar() {
             try {
-                // Capturar cámara y audio
                 localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 document.getElementById('localVideo').srcObject = localStream;
                 
-                // Iniciar PeerJS para la conexión directa
                 peer = new Peer();
                 
                 peer.on('open', (id) => {
-                    statusBox.innerText = "🟢 Listo para buscar";
+                    statusBox.innerText = "🟢 Sistema Listo";
                 });
 
-                // Recibir llamada de otro compañero
                 peer.on('call', (call) => {
-                    if (currentCall) currentCall.close();
+                    if (currentCall) finalizarLlamada();
+                    
+                    // Si el que llama está en lista negra, ignoramos temporalmente
+                    if (listaNegra.includes(call.peer)) return;
+
                     currentCall = call;
                     call.answer(localStream);
-                    call.on('stream', (s) => {
-                        document.getElementById('remoteVideo').srcObject = s;
-                        statusBox.innerText = "🤝 Conectado";
-                    });
+                    gestionarLlamada(call);
                 });
 
-                // Escuchar quién está pulsando "Siguiente"
                 canalMatch.subscribe('buscando', (msg) => {
-                    if (msg.data.peerId !== peer.id && !currentCall) {
+                    if (msg.data.peerId !== peer.id && !currentCall && !listaNegra.includes(msg.data.peerId)) {
                         llamarA(msg.data.peerId);
                     }
                 });
 
             } catch (err) {
-                statusBox.innerText = "❌ Activa la cámara";
-                alert("Debes permitir el acceso a la cámara y micro.");
+                statusBox.innerText = "❌ Error de Cámara";
             }
         }
 
-        function buscarSiguiente() {
-            if (currentCall) currentCall.close();
-            document.getElementById('remoteVideo').srcObject = null;
-            statusBox.innerText = "🔍 Buscando...";
-            // Publicar mi ID para que alguien me llame
-            canalMatch.publish('buscando', { peerId: peer.id });
+        function gestionarLlamada(call) {
+            loader.style.display = 'none';
+            call.on('stream', (s) => {
+                document.getElementById('remoteVideo').srcObject = s;
+                statusBox.innerText = "🤝 En línea";
+            });
+
+            // Detectar si la otra persona cierra o se va
+            call.on('close', () => finalizarLlamada());
+            call.on('error', () => finalizarLlamada());
         }
 
         function llamarA(id) {
             const call = peer.call(id, localStream);
-            call.on('stream', (s) => {
-                document.getElementById('remoteVideo').srcObject = s;
-                statusBox.innerText = "🤝 Conectado";
-                currentCall = call;
-            });
+            currentCall = call;
+            gestionarLlamada(call);
+        }
+
+        function buscarSiguiente() {
+            if (currentCall) {
+                // Agregar al actual a la lista negra antes de saltar
+                const anteriorId = currentCall.peer;
+                listaNegra.push(anteriorId);
+                setTimeout(() => {
+                    listaNegra = listaNegra.filter(id => id !== anteriorId);
+                }, 10000); // 10 segundos de cooldown
+                
+                finalizarLlamada();
+            }
+            
+            loader.style.display = 'flex';
+            statusBox.innerText = "🔍 Buscando...";
+            canalMatch.publish('buscando', { peerId: peer.id });
+        }
+
+        function finalizarLlamada() {
+            if (currentCall) currentCall.close();
+            currentCall = null;
+            document.getElementById('remoteVideo').srcObject = null;
+            statusBox.innerText = "🔴 Desconectado";
+            loader.style.display = 'none';
         }
 
         function detener() {
-            if (currentCall) currentCall.close();
-            document.getElementById('remoteVideo').srcObject = null;
-            statusBox.innerText = "⏹️ Detenido";
+            finalizarLlamada();
+            statusBox.innerText = "⏹️ App en Pausa";
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            localStream.getAudioTracks()[0].enabled = !isMuted;
+            const btn = document.getElementById('muteBtn');
+            btn.classList.toggle('active');
+            btn.innerText = isMuted ? "🔇" : "🎤";
         }
 
         function reportar() {
-            alert("Usuario reportado. Saltando al siguiente...");
+            alert("Usuario reportado. Bloqueando conexión...");
             buscarSiguiente();
         }
+
+        // Detectar si el usuario cierra la pestaña para avisar a Ably/Peer
+        window.onbeforeunload = () => {
+            detener();
+            peer.destroy();
+        };
 
         iniciar();
     </script>
