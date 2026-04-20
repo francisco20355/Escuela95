@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sexto TV | Pro Cam</title>
+    <title>AsdTV nuevas actualizaciones</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     
@@ -29,6 +29,26 @@
             height: 100dvh; 
             overflow: hidden; 
         }
+
+        /* --- NUEVO: ESTILOS DE RACHA --- */
+        .racha-container {
+            position: absolute; top: 75px; right: 15px; padding: 8px 18px; border-radius: 25px;
+            font-weight: bold; display: flex; align-items: center; gap: 8px; z-index: 20;
+            transition: all 0.5s ease; border: 2px solid rgba(255,255,255,0.2); color: white;
+        }
+        .lvl-bronce { background: #cd7f32; box-shadow: 0 0 10px #cd7f32; }
+        .lvl-plata { background: #c0c0c0; color: #333; box-shadow: 0 0 15px #fff; }
+        .lvl-oro { background: #ffd700; color: #442200; box-shadow: 0 0 20px #ffd700; }
+        .lvl-diamante { background: #00d4ff; box-shadow: 0 0 25px #00d4ff; }
+        .lvl-esmeralda { background: #2ecc71; box-shadow: 0 0 30px #2ecc71; }
+        .lvl-maestro { background: #9b59b6; box-shadow: 0 0 35px #9b59b6; }
+        .lvl-leyenda { 
+            background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff, #00ffff);
+            background-size: 300% 300%; animation: grad 2s infinite alternate;
+            box-shadow: 0 0 50px #ff00ff; border: 3px solid #fff; transform: scale(1.1);
+        }
+        @keyframes grad { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        /* ------------------------------ */
 
         .top-bar {
             height: 60px;
@@ -136,6 +156,10 @@
 
     <div class="top-bar">Asd<span>TV</span></div>
 
+    <div class="racha-container lvl-bronce" id="racha-ui">
+        <span id="racha-icono">🔥</span> <span>Racha:</span> <span id="racha-numero">0</span>
+    </div>
+
     <div class="video-container">
         <div class="video-box">
             <div class="loader-overlay" id="loader">
@@ -174,7 +198,48 @@
         const statusBox = document.getElementById('status-box');
         const loader = document.getElementById('loader');
 
+        // --- NUEVA LÓGICA DE RACHA PERSISTENTE ---
+        let contadorRacha = parseInt(localStorage.getItem('rachaAsdTV')) || 0;
+        let ultimaActividad = localStorage.getItem('ultimaConexionAsdTV');
+
+        function verificarVencimiento() {
+            if (ultimaActividad && contadorRacha > 0) {
+                const ahora = new Date();
+                const horaActual = ahora.getHours();
+                // Tregua nocturna: de 00:00 a 08:00 no se resetea
+                if (horaActual >= 0 && horaActual < 8) return; 
+
+                const tiempoLimite = 4 * 60 * 60 * 1000; // 4 Horas
+                if (ahora.getTime() - parseInt(ultimaActividad) > tiempoLimite) {
+                    contadorRacha = 0;
+                    localStorage.setItem('rachaAsdTV', 0);
+                }
+            }
+        }
+
+        function actualizarVisualRacha() {
+            const ui = document.getElementById('racha-ui');
+            const icono = document.getElementById('racha-icono');
+            const num = document.getElementById('racha-numero');
+
+            localStorage.setItem('rachaAsdTV', contadorRacha);
+            localStorage.setItem('ultimaConexionAsdTV', new Date().getTime());
+
+            ui.className = 'racha-container';
+            if (contadorRacha >= 150) { ui.classList.add('lvl-leyenda'); icono.innerText = "🌌"; }
+            else if (contadorRacha >= 111) { ui.classList.add('lvl-maestro'); icono.innerText = "🔮"; }
+            else if (contadorRacha >= 81) { ui.classList.add('lvl-esmeralda'); icono.innerText = "💎"; }
+            else if (contadorRacha >= 51) { ui.classList.add('lvl-diamante'); icono.innerText = "❄️"; }
+            else if (contadorRacha >= 31) { ui.classList.add('lvl-oro'); icono.innerText = "👑"; }
+            else if (contadorRacha >= 11) { ui.classList.add('lvl-plata'); icono.innerText = "✨"; }
+            else { ui.classList.add('lvl-bronce'); icono.innerText = "🔥"; }
+            num.innerText = contadorRacha;
+        }
+        // -----------------------------------------
+
         async function iniciar() {
+            verificarVencimiento(); // Revisar racha al abrir
+            actualizarVisualRacha(); // Dibujar racha inicial
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: currentFacingMode }, 
@@ -212,6 +277,10 @@
             call.on('stream', (s) => {
                 document.getElementById('remoteVideo').srcObject = s;
                 statusBox.innerText = "🤝 En línea";
+                
+                // NUEVO: Sumar racha al conectar con alguien
+                contadorRacha++;
+                actualizarVisualRacha();
             });
             call.on('close', () => finalizarLlamada());
             call.on('error', () => finalizarLlamada());
@@ -297,4 +366,4 @@
         iniciar();
     </script>
 </body>
-</html>peer.id
+</html>
