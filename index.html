@@ -3,151 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AsdTV | Edición Global Pro</title>
+    <title>AsdTV | Escuela 263</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <style>
+        /**
+         * SISTEMA DE VARIABLES DE DISEÑO
+         */
         :root {
             --primary: #007bff;
             --danger: #ff3b30;
-            --dark: #0a0a0a;
-            --accent: #ffa500;
-            --gray: #1a1a1a;
-            --glass: rgba(255, 255, 255, 0.1);
+            --dark-bg: #0d0d0d;
+            --accent-color: #ffa500;
+            --card-bg: #1a1a1a;
+            --glass-effect: rgba(255, 255, 255, 0.05);
+            --border-color: #252525;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* RESET GENERAL Y BLOQUEO DE SCROLL */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+            touch-action: none; 
+        }
 
         body { 
-            margin: 0; 
-            background: var(--dark); 
-            color: #fff; 
+            background: var(--dark-bg); 
+            color: #ffffff; 
             font-family: 'Poppins', sans-serif; 
             display: flex; 
             flex-direction: column; 
+            height: 100vh;
             height: 100dvh; 
             overflow: hidden; 
         }
 
-        /* --- BARRA SUPERIOR PROFESIONAL --- */
-        .top-bar {
-            height: 65px;
-            background: var(--gray);
+        /* --- CABECERA DE LA APLICACIÓN (60px) --- */
+        .app-header {
+            height: 60px;
+            min-height: 60px;
+            background: #111;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid var(--border-color);
             z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        .brand { display: flex; align-items: center; gap: 8px; }
-        .brand h1 { font-size: 20px; margin: 0; color: var(--accent); letter-spacing: 1px; }
-        .brand span { font-size: 10px; background: var(--primary); padding: 2px 6px; border-radius: 4px; color: white; }
+        .brand-name { display: flex; align-items: center; gap: 5px; }
+        .brand-name h1 { font-size: 22px; color: var(--accent-color); font-weight: 700; }
+        .brand-name span { color: white; }
 
-        /* CONTENEDOR DE RACHA DINÁMICO */
-        .racha-ui {
+        /* ESTILO DINÁMICO DE LA RACHA */
+        .streak-container {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 50px;
             font-family: 'Roboto Mono', monospace;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            border: 1px solid var(--glass);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: rgba(0,0,0,0.3);
+            background: var(--glass-effect);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* ESTADOS DE LA RACHA */
-        .lvl-bronce { background: linear-gradient(45deg, #cd7f32, #8b4513); color: white; }
-        .lvl-plata { background: linear-gradient(45deg, #bdc3c7, #2c3e50); color: white; }
-        .lvl-oro { background: linear-gradient(45deg, #f1c40f, #f39c12); color: black; box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-        .lvl-diamante { background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: white; box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); }
+        /* NIVELES DE RACHA */
+        .lvl-bronce { background: linear-gradient(45deg, #cd7f32, #8b4513); border-color: #cd7f32; }
+        .lvl-plata { background: linear-gradient(45deg, #bdc3c7, #2c3e50); border-color: #bdc3c7; }
+        .lvl-oro { background: linear-gradient(45deg, #f1c40f, #f39c12); color: #000; box-shadow: 0 0 15px #f1c40f; }
+        .lvl-diamante { background: linear-gradient(45deg, #00d2ff, #3a7bd5); box-shadow: 0 0 20px #00d2ff; }
+        .lvl-esmeralda { background: linear-gradient(45deg, #2ecc71, #27ae60); box-shadow: 0 0 15px #2ecc71; }
+        .lvl-maestro { background: linear-gradient(45deg, #9b59b6, #8e44ad); box-shadow: 0 0 15px #9b59b6; }
         .lvl-leyenda { 
             background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff, #00ffff);
-            background-size: 400% 400%;
-            animation: hyper-gradient 3s ease infinite;
+            background-size: 400% auto;
+            animation: cosmic-ray 3s linear infinite;
             border: 2px solid #fff;
-            color: white;
-            transform: scale(1.05);
         }
-
-        @keyframes hyper-gradient {
-            0% { background-position: 0% 50%; }
+        @keyframes cosmic-ray { 
+            0% { background-position: 0% 50%; } 
             50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            100% { background-position: 0% 50%; } 
         }
 
-        /* --- VIDEO LAYOUT --- */
-        .main-stage {
+        /* --- ÁREA DE VIDEO PRINCIPAL --- */
+        .video-workspace {
             flex: 1;
             display: flex;
             flex-direction: row;
             background: #000;
-            gap: 4px;
-            padding: 4px;
+            padding: 8px;
+            gap: 8px;
+            min-height: 0; /* Permite que el flex-item se encoja para los botones */
         }
 
-        .video-wrapper {
+        .video-box {
             flex: 1;
             position: relative;
-            background: #111;
-            border-radius: 12px;
+            background: #151515;
+            border-radius: 18px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid #222;
         }
 
         video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 14px;
         }
 
-        #localVideo { transform: scaleX(-1); border: 1px solid #222; }
+        #local-view { transform: scaleX(-1); border: 2px solid #333; }
 
-        /* UI OVERLAYS */
-        .overlay-label {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0,0,0,0.5);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            backdrop-filter: blur(4px);
-            z-index: 5;
-        }
-
-        .connection-status {
-            position: absolute;
-            bottom: 15px;
-            left: 15px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0,0,0,0.7);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-            border: 1px solid var(--glass);
-        }
-
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
-        .dot.online { background: #4cd964; box-shadow: 0 0 10px #4cd964; }
-
-        /* LOADING SPINNER */
-        .searching-layer {
+        /* CARGANDO / BUSCANDO */
+        .loader-screen {
             position: absolute;
             inset: 0;
             background: rgba(0,0,0,0.9);
@@ -155,279 +138,321 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 20;
-            text-align: center;
+            z-index: 50;
         }
 
-        .spinner-pro {
-            width: 45px;
-            height: 45px;
-            border: 3px solid transparent;
-            border-top-color: var(--primary);
-            border-bottom-color: var(--accent);
+        .pro-spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--primary);
+            border-bottom: 4px solid var(--accent-color);
             border-radius: 50%;
-            animation: spin-triple 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            animation: rotate-pro 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
         }
+        @keyframes rotate-pro { 100% { transform: rotate(360deg); } }
 
-        @keyframes spin-triple { 100% { transform: rotate(360deg); } }
-
-        /* --- CONTROL BAR --- */
-        .controls {
+        /* --- BARRA DE CONTROLES INFERIOR (100px) --- */
+        .controls-nav {
             height: 110px;
-            background: var(--gray);
+            min-height: 110px;
+            background: var(--card-bg);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 0 15px;
-            border-top: 1px solid #333;
+            gap: 15px;
+            padding: 0 20px;
+            border-top: 3px solid var(--border-color);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
         }
 
-        .action-btn {
+        .btn-ui {
             border: none;
-            border-radius: 16px;
-            height: 65px;
+            border-radius: 20px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: 0.3s;
             color: white;
-            font-family: inherit;
+            font-size: 26px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
 
-        .btn-round { width: 65px; background: #2a2a2a; font-size: 22px; }
-        .btn-round:active { transform: scale(0.9); background: #333; }
+        .btn-ui:active { transform: scale(0.9) translateY(4px); box-shadow: none; }
+
+        .btn-utility { width: 70px; background: #2a2a2a; border: 1px solid #333; }
+        .btn-danger-ui { background: var(--danger); width: 70px; }
         
-        .btn-main {
+        .btn-main-next {
             flex: 1;
-            background: var(--primary);
-            font-size: 18px;
-            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), #0056b3);
+            font-size: 20px;
+            font-weight: 700;
             text-transform: uppercase;
-            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+            letter-spacing: 1px;
+            border: 1px solid #00a2ff;
         }
 
-        .btn-danger { background: var(--danger); width: 65px; font-size: 20px; }
+        /* DECORACIONES Y ETIQUETAS */
+        .badge-ui {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(0,0,0,0.6); padding: 5px 12px;
+            border-radius: 10px; font-size: 11px; font-weight: bold;
+            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
+        }
 
-        /* MOBILE ADJUSTMENTS */
-        @media (max-width: 768px) {
-            .main-stage { flex-direction: column; }
-            .controls { height: 130px; padding-bottom: 30px; }
-            .racha-ui { padding: 4px 10px; font-size: 13px; }
+        .status-pill {
+            position: absolute; bottom: 15px; left: 15px;
+            background: rgba(0,0,0,0.8); padding: 6px 14px;
+            border-radius: 25px; font-size: 10px;
+            display: flex; align-items: center; gap: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .indicator-led { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+        .led-active { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+
+        /* RESPONSIVE DESIGN PARA MÓVILES */
+        @media (max-width: 600px) {
+            .video-workspace { flex-direction: column; }
+            .controls-nav { height: 130px; padding-bottom: 30px; }
+            .btn-ui { height: 65px; }
         }
     </style>
 </head>
 <body>
 
-    <header class="top-bar">
-        <div class="brand">
-            <h1>AsdTV</h1>
-            <span>PRO</span>
+    <header class="app-header">
+        <div class="brand-name">
+            <h1>Asd<span>TV</span></h1>
         </div>
         
-        <div id="racha-master" class="racha-ui lvl-bronce">
-            <span id="racha-icon">🔥</span>
-            <span id="racha-val">0</span>
+        <div id="streak-master" class="streak-container lvl-bronce">
+            <span id="streak-ico">🔥</span>
+            <span id="streak-num">0</span>
         </div>
     </header>
 
-    <main class="main-stage">
-        <div class="video-wrapper">
-            <div class="searching-layer" id="search-ui">
-                <div class="spinner-pro"></div>
-                <p style="margin-top:15px; font-size:12px; opacity:0.7;">Escaneando servidores...</p>
+    <main class="video-workspace">
+        <div class="video-box">
+            <div class="loader-screen" id="searching-ui">
+                <div class="pro-spinner"></div>
+                <p style="margin-top:15px; font-size:12px; font-weight:600;">Sincronizando...</p>
             </div>
-            <div class="overlay-label">En Vivo</div>
-            <video id="remote-feed" autoplay playsinline></video>
-            <div class="connection-status">
-                <div class="dot" id="status-dot"></div>
-                <span id="status-text">ESPERANDO</span>
+            <div class="badge-ui">RECAMBIO REMOTO</div>
+            <video id="peer-video" autoplay playsinline></video>
+            <div class="status-pill">
+                <div class="indicator-led" id="connection-led"></div>
+                <span id="connection-label">DESCONECTADO</span>
             </div>
         </div>
 
-        <div class="video-wrapper">
-            <div class="overlay-label" style="background: var(--primary);">Tú</div>
-            <video id="local-feed" autoplay muted playsinline></video>
+        <div class="video-box">
+            <div class="badge-ui" style="color:var(--primary)">TU CÁMARA</div>
+            <video id="local-view" autoplay muted playsinline></video>
         </div>
     </main>
 
-    <nav class="controls">
-        <button class="action-btn btn-round" onclick="muteHandler()" id="m-btn">🎤</button>
-        <button class="action-btn btn-round" onclick="cameraFlip()">🔄</button>
-        <button class="action-btn btn-main" onclick="nextPeer()">Siguiente</button>
-        <button class="action-btn btn-danger" onclick="sendReport()">⚠️</button>
-    </nav>
+    <footer class="controls-nav">
+        <button class="btn-ui btn-utility" onclick="toggleMicrophone()" id="audio-toggle">🎤</button>
+        <button class="btn-ui btn-utility" onclick="rotateCamera()">🔄</button>
+        <button class="btn-ui btn-main-next" onclick="triggerNext()">Siguiente</button>
+        <button class="btn-ui btn-danger-ui" onclick="reportAction()">⚠️</button>
+    </footer>
 
     <script>
         /**
-         * CONFIGURACIÓN GLOBAL
-         * AsdTV PRO - Lógica de Racha y Conectividad
+         * LÓGICA DE APLICACIÓN - ASDTV PRO v3.0
+         * Sistema de señalización por Ably y conexión P2P por PeerJS
          */
-        const ABLY_KEY = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
-        const ably = new Ably.Realtime(ABLY_KEY);
-        const matchChannel = ably.channels.get('recreo-match');
         
-        let p2p, streamIn, activeCall;
-        let blackList = [];
-        let muted = false;
-        let camMode = 'user';
+        // Configuración de API Keys
+        const ABLY_SECRET = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
+        const ablyInstance = new Ably.Realtime(ABLY_SECRET);
+        const networkingChannel = ablyInstance.channels.get('recreo-match');
+        
+        // Variables de Estado de Sesión
+        let peerConnector, localMediaStream, activeSessionCall;
+        let blockList = [];
+        let microphoneActive = true;
+        let activeFacingMode = 'user';
 
-        // Lógica de Persistencia
-        let rachaCount = parseInt(localStorage.getItem('_atv_streak')) || 0;
-        let lastSeen = localStorage.getItem('_atv_ts');
+        // GESTIÓN DE LA RACHA (PERSISTENCIA Y NIVELES)
+        let currentStreakCount = parseInt(localStorage.getItem('asd_streak_v3')) || 0;
+        let lastActionTimestamp = localStorage.getItem('asd_time_v3');
 
         /**
-         * GESTOR DE RACHA: El corazón del sistema
+         * Verifica si la racha ha expirado (Regla de 4 horas)
+         * No aplica entre 00:00 y 08:00 (Tregua de sueño)
          */
-        function validateStreak() {
-            if (lastSeen && rachaCount > 0) {
+        function checkStreakStatus() {
+            if (lastActionTimestamp && currentStreakCount > 0) {
                 const now = new Date();
-                const hr = now.getHours();
-                // Ventana de protección nocturna (00:00 a 08:00)
-                if (hr >= 0 && hr < 8) return;
+                const currentHour = now.getHours();
+                
+                // Si estamos en horario de tregua, no verificamos expiración
+                if (currentHour >= 0 && currentHour < 8) return;
 
-                const diff = now.getTime() - parseInt(lastSeen);
-                if (diff > (4 * 60 * 60 * 1000)) { // 4 Horas limite
-                    rachaCount = 0;
-                    saveState();
+                const timeDiff = now.getTime() - parseInt(lastActionTimestamp);
+                const fourHoursInMs = 4 * 60 * 60 * 1000;
+                
+                if (timeDiff > fourHoursInMs) {
+                    currentStreakCount = 0;
+                    updateStorage();
                 }
             }
         }
 
-        function saveState() {
-            localStorage.setItem('_atv_streak', rachaCount);
-            localStorage.setItem('_atv_ts', new Date().getTime());
-            renderRacha();
-        }
-
-        function renderRacha() {
-            const box = document.getElementById('racha-master');
-            const icon = document.getElementById('racha-icon');
-            const val = document.getElementById('racha-val');
-            
-            box.className = 'racha-ui';
-            if (rachaCount >= 150) { box.classList.add('lvl-leyenda'); icon.innerText = "🌌"; }
-            else if (rachaCount >= 111) { box.classList.add('lvl-maestro'); icon.innerText = "🔮"; }
-            else if (rachaCount >= 81) { box.classList.add('lvl-esmeralda'); icon.innerText = "💎"; }
-            else if (rachaCount >= 51) { box.classList.add('lvl-diamante'); icon.innerText = "❄️"; }
-            else if (rachaCount >= 31) { box.classList.add('lvl-oro'); icon.innerText = "👑"; }
-            else if (rachaCount >= 11) { box.classList.add('lvl-plata'); icon.innerText = "✨"; }
-            else { box.classList.add('lvl-bronce'); icon.innerText = "🔥"; }
-            
-            val.innerText = rachaCount;
+        function updateStorage() {
+            localStorage.setItem('asd_streak_v3', currentStreakCount);
+            localStorage.setItem('asd_time_v3', new Date().getTime());
+            refreshUserInterface();
         }
 
         /**
-         * SISTEMA DE VIDEO Y LLAMADAS
+         * Actualiza visualmente el contador y los rangos de poder
          */
-        async function bootApp() {
-            validateStreak();
-            renderRacha();
+        function refreshUserInterface() {
+            const container = document.getElementById('streak-master');
+            const icon = document.getElementById('streak-ico');
+            const label = document.getElementById('streak-num');
+            
+            container.className = 'streak-container';
+            
+            if (currentStreakCount >= 150) { container.classList.add('lvl-leyenda'); icon.innerText = "🌌"; }
+            else if (currentStreakCount >= 111) { container.classList.add('lvl-maestro'); icon.innerText = "🔮"; }
+            else if (currentStreakCount >= 81) { container.classList.add('lvl-esmeralda'); icon.innerText = "💎"; }
+            else if (currentStreakCount >= 51) { container.classList.add('lvl-diamante'); icon.innerText = "❄️"; }
+            else if (currentStreakCount >= 31) { container.classList.add('lvl-oro'); icon.innerText = "👑"; }
+            else if (currentStreakCount >= 11) { container.classList.add('lvl-plata'); icon.innerText = "✨"; }
+            else { container.classList.add('lvl-bronce'); icon.innerText = "🔥"; }
+            
+            label.innerText = currentStreakCount;
+        }
+
+        /**
+         * INICIALIZACIÓN DEL MOTOR DE COMUNICACIÓN
+         */
+        async function initializeApp() {
+            checkStreakStatus();
+            refreshUserInterface();
             
             try {
-                streamIn = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: camMode }, 
+                // Captura de medios locales
+                localMediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: activeFacingMode }, 
                     audio: true 
                 });
-                document.getElementById('local-feed').srcObject = streamIn;
+                document.getElementById('local-view').srcObject = localMediaStream;
                 
-                p2p = new Peer();
+                // Creación de servidor P2P
+                peerConnector = new Peer();
                 
-                p2p.on('open', (id) => {
-                    console.log('ID Peer Generado:', id);
-                    document.getElementById('status-dot').classList.add('online');
-                    document.getElementById('status-text').innerText = "SISTEMA LISTO";
+                peerConnector.on('open', (id) => {
+                    document.getElementById('connection-led').classList.add('led-active');
+                    document.getElementById('connection-label').innerText = "SISTEMA ONLINE";
                 });
 
-                p2p.on('call', (incoming) => {
-                    if (blackList.includes(incoming.peer)) return;
-                    if (activeCall) closeSession();
-                    activeCall = incoming;
-                    incoming.answer(streamIn);
-                    handlePipeline(incoming);
+                // Manejo de llamadas entrantes
+                peerConnector.on('call', (incomingCall) => {
+                    if (blockList.includes(incomingCall.peer)) return;
+                    if (activeSessionCall) closeCurrentSession();
+                    activeSessionCall = incomingCall;
+                    incomingCall.answer(localMediaStream);
+                    attachStreamToView(incomingCall);
                 });
 
-                matchChannel.subscribe('buscando', (msg) => {
-                    if (msg.data.pid !== p2p.id && !activeCall && !blackList.includes(msg.data.pid)) {
-                        requestPeer(msg.data.pid);
+                // Escucha de señales de emparejamiento
+                networkingChannel.subscribe('buscando', (message) => {
+                    const peerId = message.data.uid;
+                    if (peerId !== peerConnector.id && !activeSessionCall && !blockList.includes(peerId)) {
+                        startCall(peerId);
                     }
                 });
 
-            } catch (err) {
-                alert("Error: Revisa los permisos de cámara.");
+            } catch (error) {
+                console.error("Hardware Error:", error);
+                alert("Error: Asegúrate de dar permisos de cámara y micrófono.");
             }
         }
 
-        function requestPeer(targetId) {
-            const call = p2p.call(targetId, streamIn);
-            activeCall = call;
-            handlePipeline(call);
+        function startCall(targetPeerId) {
+            const call = peerConnector.call(targetPeerId, localMediaStream);
+            activeSessionCall = call;
+            attachStreamToView(call);
         }
 
-        function handlePipeline(call) {
-            document.getElementById('search-ui').style.display = 'none';
+        function attachStreamToView(call) {
+            document.getElementById('searching-ui').style.display = 'none';
             call.on('stream', (remoteStream) => {
-                document.getElementById('remote-feed').srcObject = remoteStream;
-                document.getElementById('status-text').innerText = "EN LÍNEA";
-                rachaCount++;
-                saveState();
+                document.getElementById('peer-video').srcObject = remoteStream;
+                document.getElementById('connection-label').innerText = "VINCULADO";
+                currentStreakCount++;
+                updateStorage();
             });
-            call.on('close', () => closeSession());
-            call.on('error', () => closeSession());
+            call.on('close', () => closeCurrentSession());
+            call.on('error', () => closeCurrentSession());
         }
 
-        function nextPeer() {
-            if (activeCall) {
-                const pId = activeCall.peer;
-                blackList.push(pId);
-                setTimeout(() => { blackList = blackList.filter(i => i !== pId); }, 15000);
-                closeSession();
+        function triggerNext() {
+            if (activeSessionCall) {
+                const partnerId = activeSessionCall.peer;
+                blockList.push(partnerId);
+                // La lista negra se limpia parcialmente cada 30 segundos
+                setTimeout(() => { blockList = blockList.filter(id => id !== partnerId); }, 30000);
+                closeCurrentSession();
             }
-            document.getElementById('search-ui').style.display = 'flex';
-            matchChannel.publish('buscando', { pid: p2p.id });
+            document.getElementById('searching-ui').style.display = 'flex';
+            networkingChannel.publish('buscando', { uid: peerConnector.id });
         }
 
         /**
-         * UTILIDADES DE HARDWARE
+         * UTILIDADES DE HARDWARE Y CONTROL
          */
-        async function cameraFlip() {
-            camMode = (camMode === 'user') ? 'environment' : 'user';
-            streamIn.getTracks().forEach(t => t.stop());
+        async function rotateCamera() {
+            activeFacingMode = (activeFacingMode === 'user') ? 'environment' : 'user';
+            localMediaStream.getTracks().forEach(track => track.stop());
             
             try {
-                streamIn = await navigator.mediaDevices.getUserMedia({ video: { facingMode: camMode }, audio: true });
-                document.getElementById('local-feed').srcObject = streamIn;
-                document.getElementById('local-feed').style.transform = (camMode === 'user') ? "scaleX(-1)" : "scaleX(1)";
+                localMediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: activeFacingMode }, 
+                    audio: true 
+                });
+                document.getElementById('local-view').srcObject = localMediaStream;
+                document.getElementById('local-view').style.transform = (activeFacingMode === 'user') ? "scaleX(-1)" : "scaleX(1)";
                 
-                if (activeCall && activeCall.peerConnection) {
-                    const sender = activeCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-                    sender.replaceTrack(streamIn.getVideoTracks()[0]);
+                // Si hay una llamada activa, reemplazamos el track de video en tiempo real
+                if (activeSessionCall && activeSessionCall.peerConnection) {
+                    const videoSender = activeSessionCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                    if (videoSender) videoSender.replaceTrack(localMediaStream.getVideoTracks()[0]);
                 }
-            } catch (e) { console.error("Error Switch Cam"); }
+            } catch (e) { console.warn("Error al rotar sensor de cámara."); }
         }
 
-        function muteHandler() {
-            muted = !muted;
-            streamIn.getAudioTracks()[0].enabled = !muted;
-            document.getElementById('m-btn').innerText = muted ? "🔇" : "🎤";
-            document.getElementById('m-btn').style.background = muted ? "var(--danger)" : "#2a2a2a";
+        function toggleMicrophone() {
+            microphoneActive = !microphoneActive;
+            localMediaStream.getAudioTracks()[0].enabled = microphoneActive;
+            const btn = document.getElementById('audio-toggle');
+            btn.innerText = microphoneActive ? "🎤" : "🔇";
+            btn.style.background = microphoneActive ? "#2a2a2a" : "var(--danger)";
         }
 
-        function closeSession() {
-            if (activeCall) activeCall.close();
-            activeCall = null;
-            document.getElementById('remote-feed').srcObject = null;
-            document.getElementById('status-text').innerText = "DESCONECTADO";
+        function closeCurrentSession() {
+            if (activeSessionCall) activeSessionCall.close();
+            activeSessionCall = null;
+            document.getElementById('peer-video').srcObject = null;
+            document.getElementById('connection-label').innerText = "DESCONECTADO";
         }
 
-        function sendReport() {
-            alert("Usuario reportado. Buscando nuevo compañero...");
-            nextPeer();
+        function reportAction() {
+            alert("Usuario reportado. Cambiando de sala...");
+            triggerNext();
         }
 
-        // Ejecución inicial
-        bootApp();
+        // Ejecución de arranque
+        initializeApp();
+
     </script>
 </body>
-                                                                          </html>
+</html>
