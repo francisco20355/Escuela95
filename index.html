@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sexto TV | Pro</title>
+    <title>Sexto TV | Pro Cam</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     
@@ -30,7 +30,6 @@
             overflow: hidden; 
         }
 
-        /* Barra superior */
         .top-bar {
             height: 60px;
             background: var(--gray);
@@ -45,7 +44,6 @@
         }
         .top-bar span { color: white; margin-left: 5px; }
 
-        /* Contenedor de videos */
         .video-container {
             display: flex;
             flex: 1;
@@ -67,11 +65,11 @@
             height: 100%; 
             object-fit: cover; 
             background: #000;
+            transition: transform 0.3s ease;
         }
 
         #localVideo { transform: scaleX(-1); border-left: 2px solid var(--gray); }
 
-        /* Capa de carga (Loader) */
         .loader-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -93,15 +91,14 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Botones inferiores */
         .bottom-bar {
             height: 100px;
             background: var(--gray);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 0 15px;
+            gap: 10px;
+            padding: 0 10px;
             border-top: 1px solid #333;
         }
 
@@ -120,14 +117,13 @@
         }
         .btn:active { transform: scale(0.95); }
 
-        .btn-stop { background: #3a3a3a; width: 70px; }
-        .btn-report { background: var(--danger); width: 70px; }
-        .btn-mute { background: #444; width: 70px; }
+        .btn-stop { background: #3a3a3a; width: 60px; }
+        .btn-util { background: #444; width: 60px; font-size: 20px; }
+        .btn-report { background: var(--danger); width: 60px; font-size: 18px; }
         .btn-next { background: var(--primary); flex: 1; font-size: 18px; box-shadow: 0 4px 15px rgba(0,123,255,0.3); }
-        .btn-mute.active { background: var(--accent); }
+        .btn-util.active { background: var(--accent); }
 
-        /* Etiquetas */
-        .watermark { position: absolute; top: 15px; left: 15px; color: rgba(255,255,255,0.4); font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .watermark { position: absolute; top: 15px; left: 15px; color: rgba(255,255,255,0.4); font-size: 14px; font-weight: bold; text-transform: uppercase; }
         .status-badge { position: absolute; bottom: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 20px; font-size: 11px; border: 1px solid rgba(255,255,255,0.1); }
 
         @media (max-width: 768px) {
@@ -158,8 +154,9 @@
     </div>
 
     <div class="bottom-bar">
-        <button class="btn btn-stop" onclick="detener()" title="Detener">OFF</button>
-        <button class="btn btn-mute" id="muteBtn" onclick="toggleMute()">🎤</button>
+        <button class="btn btn-stop" onclick="detener()">OFF</button>
+        <button class="btn btn-util" id="muteBtn" onclick="toggleMute()">🎤</button>
+        <button class="btn btn-util" onclick="switchCamera()">🔄</button>
         <button class="btn btn-next" onclick="buscarSiguiente()">SIGUIENTE</button>
         <button class="btn btn-report" onclick="reportar()">⚠️</button>
     </div>
@@ -170,15 +167,19 @@
         const canalMatch = ably.channels.get('recreo-match');
         
         let peer, localStream, currentCall;
-        let listaNegra = []; // Para evitar repetición inmediata
+        let listaNegra = [];
         let isMuted = false;
+        let currentFacingMode = 'user';
 
         const statusBox = document.getElementById('status-box');
         const loader = document.getElementById('loader');
 
         async function iniciar() {
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: currentFacingMode }, 
+                    audio: true 
+                });
                 document.getElementById('localVideo').srcObject = localStream;
                 
                 peer = new Peer();
@@ -189,10 +190,7 @@
 
                 peer.on('call', (call) => {
                     if (currentCall) finalizarLlamada();
-                    
-                    // Si el que llama está en lista negra, ignoramos temporalmente
                     if (listaNegra.includes(call.peer)) return;
-
                     currentCall = call;
                     call.answer(localStream);
                     gestionarLlamada(call);
@@ -215,8 +213,6 @@
                 document.getElementById('remoteVideo').srcObject = s;
                 statusBox.innerText = "🤝 En línea";
             });
-
-            // Detectar si la otra persona cierra o se va
             call.on('close', () => finalizarLlamada());
             call.on('error', () => finalizarLlamada());
         }
@@ -229,19 +225,55 @@
 
         function buscarSiguiente() {
             if (currentCall) {
-                // Agregar al actual a la lista negra antes de saltar
                 const anteriorId = currentCall.peer;
                 listaNegra.push(anteriorId);
                 setTimeout(() => {
                     listaNegra = listaNegra.filter(id => id !== anteriorId);
-                }, 10000); // 10 segundos de cooldown
-                
+                }, 10000);
                 finalizarLlamada();
             }
-            
             loader.style.display = 'flex';
             statusBox.innerText = "🔍 Buscando...";
             canalMatch.publish('buscando', { peerId: peer.id });
+        }
+
+        async function switchCamera() {
+            if (!localStream) return;
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            
+            const videoTrackOld = localStream.getVideoTracks()[0];
+            videoTrackOld.stop();
+
+            try {
+                const nuevoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode },
+                    audio: true
+                });
+
+                const videoTrackNew = nuevoStream.getVideoTracks()[0];
+                localStream.removeTrack(videoTrackOld);
+                localStream.addTrack(videoTrackNew);
+
+                const localVid = document.getElementById('localVideo');
+                localVid.srcObject = localStream;
+                localVid.style.transform = (currentFacingMode === 'user') ? "scaleX(-1)" : "scaleX(1)";
+
+                if (currentCall && currentCall.peerConnection) {
+                    const sender = currentCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                    if (sender) sender.replaceTrack(videoTrackNew);
+                }
+                statusBox.innerText = "📷 Cámara Switcheada";
+            } catch (e) {
+                alert("No se pudo cambiar de cámara");
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            localStream.getAudioTracks()[0].enabled = !isMuted;
+            const btn = document.getElementById('muteBtn');
+            btn.classList.toggle('active');
+            btn.innerText = isMuted ? "🔇" : "🎤";
         }
 
         function finalizarLlamada() {
@@ -257,26 +289,12 @@
             statusBox.innerText = "⏹️ App en Pausa";
         }
 
-        function toggleMute() {
-            isMuted = !isMuted;
-            localStream.getAudioTracks()[0].enabled = !isMuted;
-            const btn = document.getElementById('muteBtn');
-            btn.classList.toggle('active');
-            btn.innerText = isMuted ? "🔇" : "🎤";
-        }
-
         function reportar() {
-            alert("Usuario reportado. Bloqueando conexión...");
+            alert("Usuario reportado.");
             buscarSiguiente();
         }
-
-        // Detectar si el usuario cierra la pestaña para avisar a Ably/Peer
-        window.onbeforeunload = () => {
-            detener();
-            peer.destroy();
-        };
 
         iniciar();
     </script>
 </body>
-</html>
+</html>peer.id
