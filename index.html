@@ -105,7 +105,7 @@
             background: #000;
             padding: 8px;
             gap: 8px;
-            min-height: 0;
+            min-height: 0; /* Permite que el flex-item se encoja para los botones */
         }
 
         .video-box {
@@ -129,6 +129,7 @@
 
         #local-view { transform: scaleX(-1); border: 2px solid #333; }
 
+        /* CARGANDO / BUSCANDO */
         .loader-screen {
             position: absolute;
             inset: 0;
@@ -146,15 +147,14 @@
             border-top: 4px solid var(--primary);
             border-bottom: 4px solid var(--accent-color);
             border-radius: 50%;
-            animation: rotate-pro 1s infinite;
+            animation: rotate-pro 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
         }
+        @keyframes rotate-pro { 100% { transform: rotate(360deg); } }
 
-        @keyframes rotate-pro {
-            100% { transform: rotate(360deg); }
-        }
-
+        /* --- BARRA DE CONTROLES INFERIOR (100px) --- */
         .controls-nav {
             height: 110px;
+            min-height: 110px;
             background: var(--card-bg);
             display: flex;
             align-items: center;
@@ -162,6 +162,7 @@
             gap: 15px;
             padding: 0 20px;
             border-top: 3px solid var(--border-color);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
         }
 
         .btn-ui {
@@ -172,82 +173,286 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: 0.3s;
             color: white;
             font-size: 26px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
 
-        .btn-utility { width: 70px; background: #2a2a2a; }
-        .btn-danger-ui { background: var(--danger); width: 70px; }
+        .btn-ui:active { transform: scale(0.9) translateY(4px); box-shadow: none; }
 
+        .btn-utility { width: 70px; background: #2a2a2a; border: 1px solid #333; }
+        .btn-danger-ui { background: var(--danger); width: 70px; }
+        
         .btn-main-next {
             flex: 1;
             background: linear-gradient(135deg, var(--primary), #0056b3);
             font-size: 20px;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid #00a2ff;
+        }
+
+        /* DECORACIONES Y ETIQUETAS */
+        .badge-ui {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(0,0,0,0.6); padding: 5px 12px;
+            border-radius: 10px; font-size: 11px; font-weight: bold;
+            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .status-pill {
+            position: absolute; bottom: 15px; left: 15px;
+            background: rgba(0,0,0,0.8); padding: 6px 14px;
+            border-radius: 25px; font-size: 10px;
+            display: flex; align-items: center; gap: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .indicator-led { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+        .led-active { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+
+        /* RESPONSIVE DESIGN PARA MÓVILES */
+        @media (max-width: 600px) {
+            .video-workspace { flex-direction: column; }
+            .controls-nav { height: 130px; padding-bottom: 30px; }
+            .btn-ui { height: 65px; }
         }
     </style>
 </head>
-
 <body>
 
-<header class="app-header">
-    <div class="brand-name">
-        <h1>Asd<span>TV</span></h1>
-    </div>
-
-    <div id="streak-master" class="streak-container lvl-bronce">
-        <span id="streak-ico">🔥</span>
-        <span id="streak-num">0</span>
-    </div>
-</header>
-
-<main class="video-workspace">
-
-    <div class="video-box">
-        <div class="loader-screen" id="searching-ui">
-            <div class="pro-spinner"></div>
+    <header class="app-header">
+        <div class="brand-name">
+            <h1>Asd<span>TV</span></h1>
         </div>
-        <video id="peer-video" autoplay playsinline></video>
-    </div>
+        
+        <div id="streak-master" class="streak-container lvl-bronce">
+            <span id="streak-ico">🔥</span>
+            <span id="streak-num">0</span>
+        </div>
+    </header>
 
-    <div class="video-box">
-        <video id="local-view" autoplay muted playsinline></video>
-    </div>
+    <main class="video-workspace">
+        <div class="video-box">
+            <div class="loader-screen" id="searching-ui">
+                <div class="pro-spinner"></div>
+                <p style="margin-top:15px; font-size:12px; font-weight:600;">Sincronizando...</p>
+            </div>
+            <div class="badge-ui">RECAMBIO REMOTO</div>
+            <video id="peer-video" autoplay playsinline></video>
+            <div class="status-pill">
+                <div class="indicator-led" id="connection-led"></div>
+                <span id="connection-label">DESCONECTADO</span>
+            </div>
+        </div>
 
-</main>
+        <div class="video-box">
+            <div class="badge-ui" style="color:var(--primary)">TU CÁMARA</div>
+            <video id="local-view" autoplay muted playsinline></video>
+        </div>
+    </main>
 
-<footer class="controls-nav">
+    <footer class="controls-nav">
+        <button class="btn-ui btn-utility" onclick="toggleMicrophone()" id="audio-toggle">🎤</button>
+        <button class="btn-ui btn-utility" onclick="rotateCamera()">🔄</button>
+        <button class="btn-ui btn-main-next" onclick="triggerNext()">Siguiente</button>
+        <button class="btn-ui btn-danger-ui" onclick="reportAction()">⚠️</button>
+    </footer>
 
-    <button class="btn-ui btn-utility" onclick="toggleMicrophone()" id="audio-toggle">🎤</button>
-    <button class="btn-ui btn-utility" onclick="rotateCamera()">🔄</button>
-    <button class="btn-ui btn-main-next" onclick="triggerNext()">Siguiente</button>
-    <button class="btn-ui btn-danger-ui" onclick="reportAction()">⚠️</button>
+    <script>
+        /**
+         * LÓGICA DE APLICACIÓN - ASDTV PRO v3.0
+         * Sistema de señalización por Ably y conexión P2P por PeerJS
+         */
+        
+        // Configuración de API Keys
+        const ABLY_SECRET = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
+        const ablyInstance = new Ably.Realtime(ABLY_SECRET);
+        const networkingChannel = ablyInstance.channels.get('recreo-match');
+        
+        // Variables de Estado de Sesión
+        let peerConnector, localMediaStream, activeSessionCall;
+        let blockList = [];
+        let microphoneActive = true;
+        let activeFacingMode = 'user';
 
-</footer>
+        // GESTIÓN DE LA RACHA (PERSISTENCIA Y NIVELES)
+        let currentStreakCount = parseInt(localStorage.getItem('asd_streak_v3')) || 0;
+        let lastActionTimestamp = localStorage.getItem('asd_time_v3');
 
-<script>
-const ABLY_SECRET = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
-const ablyInstance = new Ably.Realtime(ABLY_SECRET);
-const networkingChannel = ablyInstance.channels.get('recreo-match');
+        /**
+         * Verifica si la racha ha expirado (Regla de 4 horas)
+         * No aplica entre 00:00 y 08:00 (Tregua de sueño)
+         */
+        function checkStreakStatus() {
+            if (lastActionTimestamp && currentStreakCount > 0) {
+                const now = new Date();
+                const currentHour = now.getHours();
+                
+                // Si estamos en horario de tregua, no verificamos expiración
+                if (currentHour >= 0 && currentHour < 8) return;
 
-let peerConnector, localMediaStream, activeSessionCall;
-let blockList = [];
-let microphoneActive = true;
-let activeFacingMode = 'user';
+                const timeDiff = now.getTime() - parseInt(lastActionTimestamp);
+                const fourHoursInMs = 4 * 60 * 60 * 1000;
+                
+                if (timeDiff > fourHoursInMs) {
+                    currentStreakCount = 0;
+                    updateStorage();
+                }
+            }
+        }
 
-async function initializeApp() {
-    localMediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: activeFacingMode },
-        audio: true
-    });
+        function updateStorage() {
+            localStorage.setItem('asd_streak_v3', currentStreakCount);
+            localStorage.setItem('asd_time_v3', new Date().getTime());
+            refreshUserInterface();
+        }
 
-    document.getElementById('local-view').srcObject = localMediaStream;
+        /**
+         * Actualiza visualmente el contador y los rangos de poder
+         */
+        function refreshUserInterface() {
+            const container = document.getElementById('streak-master');
+            const icon = document.getElementById('streak-ico');
+            const label = document.getElementById('streak-num');
+            
+            container.className = 'streak-container';
+            
+            if (currentStreakCount >= 150) { container.classList.add('lvl-leyenda'); icon.innerText = "🌌"; }
+            else if (currentStreakCount >= 111) { container.classList.add('lvl-maestro'); icon.innerText = "🔮"; }
+            else if (currentStreakCount >= 81) { container.classList.add('lvl-esmeralda'); icon.innerText = "💎"; }
+            else if (currentStreakCount >= 51) { container.classList.add('lvl-diamante'); icon.innerText = "❄️"; }
+            else if (currentStreakCount >= 31) { container.classList.add('lvl-oro'); icon.innerText = "👑"; }
+            else if (currentStreakCount >= 11) { container.classList.add('lvl-plata'); icon.innerText = "✨"; }
+            else { container.classList.add('lvl-bronce'); icon.innerText = "🔥"; }
+            
+            label.innerText = currentStreakCount;
+        }
 
-    peerConnector = new Peer();
-}
+        /**
+         * INICIALIZACIÓN DEL MOTOR DE COMUNICACIÓN
+         */
+        async function initializeApp() {
+            checkStreakStatus();
+            refreshUserInterface();
+            
+            try {
+                // Captura de medios locales
+                localMediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: activeFacingMode }, 
+                    audio: true 
+                });
+                document.getElementById('local-view').srcObject = localMediaStream;
+                
+                // Creación de servidor P2P
+                peerConnector = new Peer();
+                
+                peerConnector.on('open', (id) => {
+                    document.getElementById('connection-led').classList.add('led-active');
+                    document.getElementById('connection-label').innerText = "SISTEMA ONLINE";
+                });
 
-initializeApp();
-</script>
+                // Manejo de llamadas entrantes
+                peerConnector.on('call', (incomingCall) => {
+                    if (blockList.includes(incomingCall.peer)) return;
+                    if (activeSessionCall) closeCurrentSession();
+                    activeSessionCall = incomingCall;
+                    incomingCall.answer(localMediaStream);
+                    attachStreamToView(incomingCall);
+                });
 
+                // Escucha de señales de emparejamiento
+                networkingChannel.subscribe('buscando', (message) => {
+                    const peerId = message.data.uid;
+                    if (peerId !== peerConnector.id && !activeSessionCall && !blockList.includes(peerId)) {
+                        startCall(peerId);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Hardware Error:", error);
+                alert("Error: Asegúrate de dar permisos de cámara y micrófono.");
+            }
+        }
+
+        function startCall(targetPeerId) {
+            const call = peerConnector.call(targetPeerId, localMediaStream);
+            activeSessionCall = call;
+            attachStreamToView(call);
+        }
+
+        function attachStreamToView(call) {
+            document.getElementById('searching-ui').style.display = 'none';
+            call.on('stream', (remoteStream) => {
+                document.getElementById('peer-video').srcObject = remoteStream;
+                document.getElementById('connection-label').innerText = "VINCULADO";
+                currentStreakCount++;
+                updateStorage();
+            });
+            call.on('close', () => closeCurrentSession());
+            call.on('error', () => closeCurrentSession());
+        }
+
+        function triggerNext() {
+            if (activeSessionCall) {
+                const partnerId = activeSessionCall.peer;
+                blockList.push(partnerId);
+                // La lista negra se limpia parcialmente cada 30 segundos
+                setTimeout(() => { blockList = blockList.filter(id => id !== partnerId); }, 30000);
+                closeCurrentSession();
+            }
+            document.getElementById('searching-ui').style.display = 'flex';
+            networkingChannel.publish('buscando', { uid: peerConnector.id });
+        }
+
+        /**
+         * UTILIDADES DE HARDWARE Y CONTROL
+         */
+        async function rotateCamera() {
+            activeFacingMode = (activeFacingMode === 'user') ? 'environment' : 'user';
+            localMediaStream.getTracks().forEach(track => track.stop());
+            
+            try {
+                localMediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: activeFacingMode }, 
+                    audio: true 
+                });
+                document.getElementById('local-view').srcObject = localMediaStream;
+                document.getElementById('local-view').style.transform = (activeFacingMode === 'user') ? "scaleX(-1)" : "scaleX(1)";
+                
+                // Si hay una llamada activa, reemplazamos el track de video en tiempo real
+                if (activeSessionCall && activeSessionCall.peerConnection) {
+                    const videoSender = activeSessionCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
+                    if (videoSender) videoSender.replaceTrack(localMediaStream.getVideoTracks()[0]);
+                }
+            } catch (e) { console.warn("Error al rotar sensor de cámara."); }
+        }
+
+        function toggleMicrophone() {
+            microphoneActive = !microphoneActive;
+            localMediaStream.getAudioTracks()[0].enabled = microphoneActive;
+            const btn = document.getElementById('audio-toggle');
+            btn.innerText = microphoneActive ? "🎤" : "🔇";
+            btn.style.background = microphoneActive ? "#2a2a2a" : "var(--danger)";
+        }
+
+        function closeCurrentSession() {
+            if (activeSessionCall) activeSessionCall.close();
+            activeSessionCall = null;
+            document.getElementById('peer-video').srcObject = null;
+            document.getElementById('connection-label').innerText = "DESCONECTADO";
+        }
+
+        function reportAction() {
+            alert("Usuario reportado. Cambiando de sala...");
+            triggerNext();
+        }
+
+        // Ejecución de arranque
+        initializeApp();
+
+    </script>
 </body>
 </html>
