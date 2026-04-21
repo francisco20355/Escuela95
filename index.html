@@ -1,306 +1,257 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AsdTV | Escuela 263</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AsdTV | Escuela 263</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <style>
+        /**
+         * SISTEMA DE VARIABLES DE DISEÑO
+         */
+        :root {
+            --primary: #007bff;
+            --danger: #ff3b30;
+            --dark-bg: #0d0d0d;
+            --accent-color: #ffa500;
+            --card-bg: #1a1a1a;
+            --glass-effect: rgba(255, 255, 255, 0.05);
+            --border-color: #252525;
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+        /* RESET GENERAL Y BLOQUEO DE SCROLL */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+            touch-action: none; 
+        }
 
-<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+        body { 
+            background: var(--dark-bg); 
+            color: #ffffff; 
+            font-family: 'Poppins', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            height: 100dvh; 
+            overflow: hidden; 
+        }
 
-<style>
+        /* --- CABECERA DE LA APLICACIÓN (60px) --- */
+        .app-header {
+            height: 60px;
+            min-height: 60px;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 2px solid var(--border-color);
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
 
-/**
- * SISTEMA DE VARIABLES DE DISEÑO
- */
+        .brand-name { display: flex; align-items: center; gap: 5px; }
+        .brand-name h1 { font-size: 22px; color: var(--accent-color); font-weight: 700; }
+        .brand-name span { color: white; }
 
-:root {
---primary: #007bff;
---danger: #ff3b30;
---dark-bg: #0d0d0d;
---accent-color: #ffa500;
---card-bg: #1a1a1a;
---glass-effect: rgba(255, 255, 255, 0.05);
---border-color: #252525;
-}
+        /* ESTILO DINÁMICO DE LA RACHA */
+        .streak-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            background: var(--glass-effect);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-/* RESET GENERAL Y BLOQUEO DE SCROLL */
+        /* NIVELES DE RACHA */
+        .lvl-bronce { background: linear-gradient(45deg, #cd7f32, #8b4513); border-color: #cd7f32; }
+        .lvl-plata { background: linear-gradient(45deg, #bdc3c7, #2c3e50); border-color: #bdc3c7; }
+        .lvl-oro { background: linear-gradient(45deg, #f1c40f, #f39c12); color: #000; box-shadow: 0 0 15px #f1c40f; }
+        .lvl-diamante { background: linear-gradient(45deg, #00d2ff, #3a7bd5); box-shadow: 0 0 20px #00d2ff; }
+        .lvl-esmeralda { background: linear-gradient(45deg, #2ecc71, #27ae60); box-shadow: 0 0 15px #2ecc71; }
+        .lvl-maestro { background: linear-gradient(45deg, #9b59b6, #8e44ad); box-shadow: 0 0 15px #9b59b6; }
+        .lvl-leyenda { 
+            background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff, #00ffff);
+            background-size: 400% auto;
+            animation: cosmic-ray 3s linear infinite;
+            border: 2px solid #fff;
+        }
+        @keyframes cosmic-ray { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; } 
+        }
 
-* {
-box-sizing: border-box;
--webkit-tap-highlight-color: transparent;
-user-select: none;
-margin: 0;
-padding: 0;
-touch-action: none;
-}
+        /* --- ÁREA DE VIDEO PRINCIPAL --- */
+        .video-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            background: #000;
+            padding: 8px;
+            gap: 8px;
+            min-height: 0;
+        }
 
-body {
-background: var(--dark-bg);
-color: #ffffff;
-font-family: 'Poppins', sans-serif;
-display: flex;
-flex-direction: column;
-height: 100vh;
-height: 100dvh;
-overflow: hidden;
-}
+        .video-box {
+            flex: 1;
+            position: relative;
+            background: #151515;
+            border-radius: 18px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #222;
+        }
 
-/* --- CABECERA DE LA APLICACIÓN (60px) --- */
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+        }
 
-.app-header {
-height: 60px;
-min-height: 60px;
-background: #111;
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 0 20px;
-border-bottom: 2px solid var(--border-color);
-z-index: 100;
-box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-}
+        #local-view { transform: scaleX(-1); border: 2px solid #333; }
 
-.brand-name {
-display: flex;
-align-items: center;
-gap: 5px;
-}
+        /* CARGANDO / BUSCANDO */
+        .loader-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
 
-.brand-name h1 {
-font-size: 22px;
-color: var(--accent-color);
-font-weight: 700;
-}
+        .pro-spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--primary);
+            border-bottom: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: rotate-pro 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        @keyframes rotate-pro { 100% { transform: rotate(360deg); } }
 
-.brand-name span {
-color: white;
-}
+        /* --- BARRA DE CONTROLES INFERIOR --- */
+        .controls-nav {
+            height: 110px;
+            min-height: 110px;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px;
+            border-top: 3px solid var(--border-color);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
+        }
 
-/* ESTILO DINÁMICO DE LA RACHA */
+        .btn-ui {
+            border: none;
+            border-radius: 20px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            color: white;
+            font-size: 26px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
 
-.streak-container {
-display: flex;
-align-items: center;
-gap: 10px;
-padding: 6px 14px;
-border-radius: 50px;
-font-family: 'Roboto Mono', monospace;
-font-size: 14px;
-font-weight: 700;
-background: var(--glass-effect);
-border: 1px solid rgba(255,255,255,0.1);
-transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+        .btn-ui:active { transform: scale(0.9) translateY(4px); box-shadow: none; }
 
-/* NIVELES DE RACHA */
-
-.lvl-bronce { background: linear-gradient(45deg, #cd7f32, #8b4513); border-color: #cd7f32; }
-.lvl-plata { background: linear-gradient(45deg, #bdc3c7, #2c3e50); border-color: #bdc3c7; }
-.lvl-oro { background: linear-gradient(45deg, #f1c40f, #f39c12); color: #000; box-shadow: 0 0 15px #f1c40f; }
-.lvl-diamante { background: linear-gradient(45deg, #00d2ff, #3a7bd5); box-shadow: 0 0 20px #00d2ff; }
-.lvl-esmeralda { background: linear-gradient(45deg, #2ecc71, #27ae60); box-shadow: 0 0 15px #2ecc71; }
-.lvl-maestro { background: linear-gradient(45deg, #9b59b6, #8e44ad); box-shadow: 0 0 15px #9b59b6; }
-
-.lvl-leyenda {
-background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff, #00ffff);
-background-size: 400% auto;
-animation: cosmic-ray 3s linear infinite;
-border: 2px solid #fff;
-}
-
-@keyframes cosmic-ray {
-0% { background-position: 0% 50%; }
-50% { background-position: 100% 50%; }
-100% { background-position: 0% 50%; }
-}
-
-/* VIDEO */
-
-.video-workspace {
-flex: 1;
-display: flex;
-flex-direction: row;
-background: #000;
-padding: 8px;
-gap: 8px;
-min-height: 0;
-}
-
-.video-box {
-flex: 1;
-position: relative;
-background: #151515;
-border-radius: 18px;
-overflow: hidden;
-display: flex;
-align-items: center;
-justify-content: center;
-border: 1px solid #222;
-}
-
-video {
-width: 100%;
-height: 100%;
-object-fit: cover;
-border-radius: 14px;
-}
-
-#local-view {
-transform: scaleX(-1);
-border: 2px solid #333;
-}
-
-/* LOADING */
-
-.loader-screen {
-position: absolute;
-inset: 0;
-background: rgba(0,0,0,0.9);
-display: none;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-z-index: 50;
-}
-
-.pro-spinner {
-width: 60px;
-height: 60px;
-border: 4px solid rgba(255,255,255,0.1);
-border-top: 4px solid var(--primary);
-border-bottom: 4px solid var(--accent-color);
-border-radius: 50%;
-animation: rotate-pro 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-}
-
-@keyframes rotate-pro {
-100% { transform: rotate(360deg); }
-}
-
-/* CONTROLS */
-
-.controls-nav {
-height: 110px;
-min-height: 110px;
-background: var(--card-bg);
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 15px;
-padding: 0 20px;
-border-top: 3px solid var(--border-color);
-box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
-}
-
-.btn-ui {
-border: none;
-border-radius: 20px;
-height: 70px;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-transition: 0.3s;
-color: white;
-font-size: 26px;
-box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-}
-
-.btn-ui:active {
-transform: scale(0.9) translateY(4px);
-box-shadow: none;
-}
-
-.btn-utility {
-width: 70px;
-background: #2a2a2a;
-border: 1px solid #333;
-}
-
-.btn-danger-ui {
-background: var(--danger);
-width: 70px;
-}
-
-.btn-main-next {
-flex: 1;
-background: linear-gradient(135deg, var(--primary), #0056b3);
-font-size: 20px;
-font-weight: 700;
-text-transform: uppercase;
-letter-spacing: 1px;
-border: 1px solid #00a2ff;
-}
-
-</style>
+        .btn-utility { width: 70px; background: #2a2a2a; border: 1px solid #333; }
+        .btn-danger-ui { background: var(--danger); width: 70px; }
+        
+        .btn-main-next {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary), #0056b3);
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid #00a2ff;
+        }
+    </style>
 </head>
 
 <body>
 
 <header class="app-header">
-<div class="brand-name">
-<h1>Asd<span>TV</span></h1>
-</div>
-
-<div id="streak-master" class="streak-container lvl-bronce">
-<span id="streak-ico">🔥</span>
-<span id="streak-num">0</span>
-</div>
+    <div class="brand-name">
+        <h1>Asd<span>TV</span></h1>
+    </div>
+    
+    <div id="streak-master" class="streak-container lvl-bronce">
+        <span id="streak-ico">🔥</span>
+        <span id="streak-num">0</span>
+    </div>
 </header>
 
 <main class="video-workspace">
 
-<div class="video-box">
-<video id="peer-video" autoplay playsinline></video>
-</div>
+    <div class="video-box">
+        <video id="peer-video" autoplay playsinline></video>
+    </div>
 
-<div class="video-box">
-<video id="local-view" autoplay muted playsinline></video>
-</div>
+    <div class="video-box">
+        <video id="local-view" autoplay muted playsinline></video>
+    </div>
 
 </main>
 
 <footer class="controls-nav">
 
-<button class="btn-ui btn-utility" onclick="toggleMicrophone()" id="audio-toggle">🎤</button>
-<button class="btn-ui btn-utility" onclick="rotateCamera()">🔄</button>
-<button class="btn-ui btn-main-next" onclick="triggerNext()">Siguiente</button>
-<button class="btn-ui btn-danger-ui" onclick="reportAction()">⚠️</button>
+    <button class="btn-ui btn-utility" onclick="toggleMicrophone()" id="audio-toggle">🎤</button>
+    <button class="btn-ui btn-utility" onclick="rotateCamera()">🔄</button>
+    <button class="btn-ui btn-main-next" onclick="triggerNext()">Siguiente</button>
+    <button class="btn-ui btn-danger-ui" onclick="reportAction()">⚠️</button>
 
 </footer>
 
 <script>
 
-/* ===== ABLY ===== */
-
 const ABLY_SECRET = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
 const ablyInstance = new Ably.Realtime(ABLY_SECRET);
 const networkingChannel = ablyInstance.channels.get('recreo-match');
-
-/* ===== PEERJS ===== */
 
 let peerConnector, localMediaStream, activeSessionCall;
 let blockList = [];
 let microphoneActive = true;
 let activeFacingMode = 'user';
 
-/* ===== START ===== */
+async function initializeApp() {
 
-async function initializeApp(){
+    localMediaStream =
+    await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: activeFacingMode },
+        audio: true
+    });
 
-localMediaStream =
-await navigator.mediaDevices.getUserMedia({
-video:{ facingMode: activeFacingMode },
-audio:true
-});
+    document.getElementById('local-view').srcObject = localMediaStream;
 
-document.getElementById('local-view').srcObject = localMediaStream;
-
-peerConnector = new Peer();
-
+    peerConnector = new Peer();
 }
 
 initializeApp();
