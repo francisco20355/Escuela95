@@ -129,7 +129,6 @@
 
         #local-view { transform: scaleX(-1); border: 2px solid #333; }
 
-        /* CARGANDO / BUSCANDO */
         .loader-screen {
             position: absolute;
             inset: 0;
@@ -147,14 +146,15 @@
             border-top: 4px solid var(--primary);
             border-bottom: 4px solid var(--accent-color);
             border-radius: 50%;
-            animation: rotate-pro 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            animation: rotate-pro 1s infinite;
         }
-        @keyframes rotate-pro { 100% { transform: rotate(360deg); } }
 
-        /* --- BARRA DE CONTROLES INFERIOR --- */
+        @keyframes rotate-pro {
+            100% { transform: rotate(360deg); }
+        }
+
         .controls-nav {
             height: 110px;
-            min-height: 110px;
             background: var(--card-bg);
             display: flex;
             align-items: center;
@@ -162,7 +162,6 @@
             gap: 15px;
             padding: 0 20px;
             border-top: 3px solid var(--border-color);
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
         }
 
         .btn-ui {
@@ -173,25 +172,18 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: 0.3s;
             color: white;
             font-size: 26px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
 
-        .btn-ui:active { transform: scale(0.9) translateY(4px); box-shadow: none; }
-
-        .btn-utility { width: 70px; background: #2a2a2a; border: 1px solid #333; }
+        .btn-utility { width: 70px; background: #2a2a2a; }
         .btn-danger-ui { background: var(--danger); width: 70px; }
-        
+
         .btn-main-next {
             flex: 1;
             background: linear-gradient(135deg, var(--primary), #0056b3);
             font-size: 20px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid #00a2ff;
         }
     </style>
 </head>
@@ -202,7 +194,7 @@
     <div class="brand-name">
         <h1>Asd<span>TV</span></h1>
     </div>
-    
+
     <div id="streak-master" class="streak-container lvl-bronce">
         <span id="streak-ico">🔥</span>
         <span id="streak-num">0</span>
@@ -212,6 +204,9 @@
 <main class="video-workspace">
 
     <div class="video-box">
+        <div class="loader-screen" id="searching-ui">
+            <div class="pro-spinner"></div>
+        </div>
         <video id="peer-video" autoplay playsinline></video>
     </div>
 
@@ -231,7 +226,6 @@
 </footer>
 
 <script>
-
 const ABLY_SECRET = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
 const ablyInstance = new Ably.Realtime(ABLY_SECRET);
 const networkingChannel = ablyInstance.channels.get('recreo-match');
@@ -242,9 +236,7 @@ let microphoneActive = true;
 let activeFacingMode = 'user';
 
 async function initializeApp() {
-
-    localMediaStream =
-    await navigator.mediaDevices.getUserMedia({
+    localMediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: activeFacingMode },
         audio: true
     });
@@ -255,7 +247,6 @@ async function initializeApp() {
 }
 
 initializeApp();
-
 </script>
 
 </body>
