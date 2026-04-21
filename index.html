@@ -1,458 +1,455 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AsdTV | Escuela 263</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    
-    <style>
-        /**
-         * SISTEMA DE VARIABLES DE DISEÑO
-         */
-        :root {
-            --primary: #007bff;
-            --danger: #ff3b30;
-            --dark-bg: #0d0d0d;
-            --accent-color: #ffa500;
-            --card-bg: #1a1a1a;
-            --glass-effect: rgba(255, 255, 255, 0.05);
-            --border-color: #252525;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AsdTV Pro Voice Edition</title>
 
-        /* RESET GENERAL Y BLOQUEO DE SCROLL */
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            margin: 0;
-            padding: 0;
-            touch-action: none; 
-        }
+<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
-        body { 
-            background: var(--dark-bg); 
-            color: #ffffff; 
-            font-family: 'Poppins', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh;
-            height: 100dvh; 
-            overflow: hidden; 
-        }
+<style>
 
-        /* --- CABECERA DE LA APLICACIÓN (60px) --- */
-        .app-header {
-            height: 60px;
-            min-height: 60px;
-            background: #111;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 2px solid var(--border-color);
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
+/* ===== TEMA OSCURO MODERNO ===== */
 
-        .brand-name { display: flex; align-items: center; gap: 5px; }
-        .brand-name h1 { font-size: 22px; color: var(--accent-color); font-weight: 700; }
-        .brand-name span { color: white; }
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:#0d0d0d;
+color:white;
+display:flex;
+flex-direction:column;
+height:100vh;
+}
 
-        /* ESTILO DINÁMICO DE LA RACHA */
-        .streak-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 14px;
-            border-radius: 50px;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 14px;
-            font-weight: 700;
-            background: var(--glass-effect);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+/* HEADER */
 
-        /* NIVELES DE RACHA */
-        .lvl-bronce { background: linear-gradient(45deg, #cd7f32, #8b4513); border-color: #cd7f32; }
-        .lvl-plata { background: linear-gradient(45deg, #bdc3c7, #2c3e50); border-color: #bdc3c7; }
-        .lvl-oro { background: linear-gradient(45deg, #f1c40f, #f39c12); color: #000; box-shadow: 0 0 15px #f1c40f; }
-        .lvl-diamante { background: linear-gradient(45deg, #00d2ff, #3a7bd5); box-shadow: 0 0 20px #00d2ff; }
-        .lvl-esmeralda { background: linear-gradient(45deg, #2ecc71, #27ae60); box-shadow: 0 0 15px #2ecc71; }
-        .lvl-maestro { background: linear-gradient(45deg, #9b59b6, #8e44ad); box-shadow: 0 0 15px #9b59b6; }
-        .lvl-leyenda { 
-            background: linear-gradient(90deg, #ff0000, #ff00ff, #0000ff, #00ffff);
-            background-size: 400% auto;
-            animation: cosmic-ray 3s linear infinite;
-            border: 2px solid #fff;
-        }
-        @keyframes cosmic-ray { 
-            0% { background-position: 0% 50%; } 
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; } 
-        }
+header{
+height:60px;
+background:#111;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px;
+font-weight:bold;
+border-bottom:1px solid #222;
+}
 
-        /* --- ÁREA DE VIDEO PRINCIPAL --- */
-        .video-workspace {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-            background: #000;
-            padding: 8px;
-            gap: 8px;
-            min-height: 0; /* Permite que el flex-item se encoja para los botones */
-        }
+/* VIDEO AREA */
 
-        .video-box {
-            flex: 1;
-            position: relative;
-            background: #151515;
-            border-radius: 18px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #222;
-        }
+.main{
+flex:1;
+display:flex;
+gap:10px;
+padding:10px;
+}
 
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 14px;
-        }
+.video-box{
+flex:1;
+background:#000;
+border-radius:14px;
+overflow:hidden;
+position:relative;
+}
 
-        #local-view { transform: scaleX(-1); border: 2px solid #333; }
+video{
+width:100%;
+height:100%;
+object-fit:cover;
+}
 
-        /* CARGANDO / BUSCANDO */
-        .loader-screen {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-        }
+/* CONTROLES */
 
-        .pro-spinner {
-            width: 60px; height: 60px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid var(--primary);
-            border-bottom: 4px solid var(--accent-color);
-            border-radius: 50%;
-            animation: rotate-pro 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-        }
-        @keyframes rotate-pro { 100% { transform: rotate(360deg); } }
+.controls{
+height:140px;
+background:#1a1a1a;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding:10px;
+border-top:1px solid #222;
+}
 
-        /* --- BARRA DE CONTROLES INFERIOR (100px) --- */
-        .controls-nav {
-            height: 110px;
-            min-height: 110px;
-            background: var(--card-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            padding: 0 20px;
-            border-top: 3px solid var(--border-color);
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
-        }
+/* FILA BOTONES */
 
-        .btn-ui {
-            border: none;
-            border-radius: 20px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.3s;
-            color: white;
-            font-size: 26px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-        }
+.row{
+display:flex;
+gap:10px;
+}
 
-        .btn-ui:active { transform: scale(0.9) translateY(4px); box-shadow: none; }
+button{
+flex:1;
+height:55px;
+border:none;
+border-radius:14px;
+background:#2a2a2a;
+color:white;
+font-size:18px;
+cursor:pointer;
+transition:0.2s;
+}
 
-        .btn-utility { width: 70px; background: #2a2a2a; border: 1px solid #333; }
-        .btn-danger-ui { background: var(--danger); width: 70px; }
-        
-        .btn-main-next {
-            flex: 1;
-            background: linear-gradient(135deg, var(--primary), #0056b3);
-            font-size: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid #00a2ff;
-        }
+button:active{
+transform:scale(0.95);
+}
 
-        /* DECORACIONES Y ETIQUETAS */
-        .badge-ui {
-            position: absolute; top: 15px; left: 15px;
-            background: rgba(0,0,0,0.6); padding: 5px 12px;
-            border-radius: 10px; font-size: 11px; font-weight: bold;
-            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
-        }
+/* BOTON PRINCIPAL */
 
-        .status-pill {
-            position: absolute; bottom: 15px; left: 15px;
-            background: rgba(0,0,0,0.8); padding: 6px 14px;
-            border-radius: 25px; font-size: 10px;
-            display: flex; align-items: center; gap: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
+.next{
+background:linear-gradient(45deg,#007bff,#0056b3);
+font-weight:bold;
+}
 
-        .indicator-led { width: 8px; height: 8px; border-radius: 50%; background: #555; }
-        .led-active { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+/* VOICE PANEL */
 
-        /* RESPONSIVE DESIGN PARA MÓVILES */
-        @media (max-width: 600px) {
-            .video-workspace { flex-direction: column; }
-            .controls-nav { height: 130px; padding-bottom: 30px; }
-            .btn-ui { height: 65px; }
-        }
-    </style>
+.voice-panel{
+display:flex;
+gap:8px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:700px){
+
+.main{
+flex-direction:column;
+}
+
+.controls{
+height:180px;
+}
+
+}
+
+</style>
 </head>
+
 <body>
 
-    <header class="app-header">
-        <div class="brand-name">
-            <h1>Asd<span>TV</span></h1>
-        </div>
-        
-        <div id="streak-master" class="streak-container lvl-bronce">
-            <span id="streak-ico">🔥</span>
-            <span id="streak-num">0</span>
-        </div>
-    </header>
+<header>
+🎥 AsdTV Voice Edition
+</header>
 
-    <main class="video-workspace">
-        <div class="video-box">
-            <div class="loader-screen" id="searching-ui">
-                <div class="pro-spinner"></div>
-                <p style="margin-top:15px; font-size:12px; font-weight:600;">Sincronizando...</p>
-            </div>
-            <div class="badge-ui">RECAMBIO REMOTO</div>
-            <video id="peer-video" autoplay playsinline></video>
-            <div class="status-pill">
-                <div class="indicator-led" id="connection-led"></div>
-                <span id="connection-label">DESCONECTADO</span>
-            </div>
-        </div>
+<div class="main">
 
-        <div class="video-box">
-            <div class="badge-ui" style="color:var(--primary)">TU CÁMARA</div>
-            <video id="local-view" autoplay muted playsinline></video>
-        </div>
-    </main>
+<div class="video-box">
+<video id="peer-video" autoplay playsinline></video>
+</div>
 
-    <footer class="controls-nav">
-        <button class="btn-ui btn-utility" onclick="toggleMicrophone()" id="audio-toggle">🎤</button>
-        <button class="btn-ui btn-utility" onclick="rotateCamera()">🔄</button>
-        <button class="btn-ui btn-main-next" onclick="triggerNext()">Siguiente</button>
-        <button class="btn-ui btn-danger-ui" onclick="reportAction()">⚠️</button>
-    </footer>
+<div class="video-box">
+<video id="local-view" autoplay muted playsinline></video>
+</div>
 
-    <script>
-        /**
-         * LÓGICA DE APLICACIÓN - ASDTV PRO v3.0
-         * Sistema de señalización por Ably y conexión P2P por PeerJS
-         */
-        
-        // Configuración de API Keys
-        const ABLY_SECRET = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
-        const ablyInstance = new Ably.Realtime(ABLY_SECRET);
-        const networkingChannel = ablyInstance.channels.get('recreo-match');
-        
-        // Variables de Estado de Sesión
-        let peerConnector, localMediaStream, activeSessionCall;
-        let blockList = [];
-        let microphoneActive = true;
-        let activeFacingMode = 'user';
+</div>
 
-        // GESTIÓN DE LA RACHA (PERSISTENCIA Y NIVELES)
-        let currentStreakCount = parseInt(localStorage.getItem('asd_streak_v3')) || 0;
-        let lastActionTimestamp = localStorage.getItem('asd_time_v3');
+<div class="controls">
 
-        /**
-         * Verifica si la racha ha expirado (Regla de 4 horas)
-         * No aplica entre 00:00 y 08:00 (Tregua de sueño)
-         */
-        function checkStreakStatus() {
-            if (lastActionTimestamp && currentStreakCount > 0) {
-                const now = new Date();
-                const currentHour = now.getHours();
-                
-                // Si estamos en horario de tregua, no verificamos expiración
-                if (currentHour >= 0 && currentHour < 8) return;
+<div class="row">
 
-                const timeDiff = now.getTime() - parseInt(lastActionTimestamp);
-                const fourHoursInMs = 4 * 60 * 60 * 1000;
-                
-                if (timeDiff > fourHoursInMs) {
-                    currentStreakCount = 0;
-                    updateStorage();
-                }
-            }
-        }
+<button onclick="toggleMicrophone()">🎤</button>
 
-        function updateStorage() {
-            localStorage.setItem('asd_streak_v3', currentStreakCount);
-            localStorage.setItem('asd_time_v3', new Date().getTime());
-            refreshUserInterface();
-        }
+<button onclick="rotateCamera()">🔄</button>
 
-        /**
-         * Actualiza visualmente el contador y los rangos de poder
-         */
-        function refreshUserInterface() {
-            const container = document.getElementById('streak-master');
-            const icon = document.getElementById('streak-ico');
-            const label = document.getElementById('streak-num');
-            
-            container.className = 'streak-container';
-            
-            if (currentStreakCount >= 150) { container.classList.add('lvl-leyenda'); icon.innerText = "🌌"; }
-            else if (currentStreakCount >= 111) { container.classList.add('lvl-maestro'); icon.innerText = "🔮"; }
-            else if (currentStreakCount >= 81) { container.classList.add('lvl-esmeralda'); icon.innerText = "💎"; }
-            else if (currentStreakCount >= 51) { container.classList.add('lvl-diamante'); icon.innerText = "❄️"; }
-            else if (currentStreakCount >= 31) { container.classList.add('lvl-oro'); icon.innerText = "👑"; }
-            else if (currentStreakCount >= 11) { container.classList.add('lvl-plata'); icon.innerText = "✨"; }
-            else { container.classList.add('lvl-bronce'); icon.innerText = "🔥"; }
-            
-            label.innerText = currentStreakCount;
-        }
+<button class="next" onclick="triggerNext()">SIGUIENTE</button>
 
-        /**
-         * INICIALIZACIÓN DEL MOTOR DE COMUNICACIÓN
-         */
-        async function initializeApp() {
-            checkStreakStatus();
-            refreshUserInterface();
-            
-            try {
-                // Captura de medios locales
-                localMediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: activeFacingMode }, 
-                    audio: true 
-                });
-                document.getElementById('local-view').srcObject = localMediaStream;
-                
-                // Creación de servidor P2P
-                peerConnector = new Peer();
-                
-                peerConnector.on('open', (id) => {
-                    document.getElementById('connection-led').classList.add('led-active');
-                    document.getElementById('connection-label').innerText = "SISTEMA ONLINE";
-                });
+<button onclick="reportUser()">⚠️</button>
 
-                // Manejo de llamadas entrantes
-                peerConnector.on('call', (incomingCall) => {
-                    if (blockList.includes(incomingCall.peer)) return;
-                    if (activeSessionCall) closeCurrentSession();
-                    activeSessionCall = incomingCall;
-                    incomingCall.answer(localMediaStream);
-                    attachStreamToView(incomingCall);
-                });
+</div>
 
-                // Escucha de señales de emparejamiento
-                networkingChannel.subscribe('buscando', (message) => {
-                    const peerId = message.data.uid;
-                    if (peerId !== peerConnector.id && !activeSessionCall && !blockList.includes(peerId)) {
-                        startCall(peerId);
-                    }
-                });
+<div class="voice-panel">
 
-            } catch (error) {
-                console.error("Hardware Error:", error);
-                alert("Error: Asegúrate de dar permisos de cámara y micrófono.");
-            }
-        }
+<button onclick="setVoiceEffect('normal')">
+🎤 Normal
+</button>
 
-        function startCall(targetPeerId) {
-            const call = peerConnector.call(targetPeerId, localMediaStream);
-            activeSessionCall = call;
-            attachStreamToView(call);
-        }
+<button onclick="setVoiceEffect('robot')">
+🤖 Robot
+</button>
 
-        function attachStreamToView(call) {
-            document.getElementById('searching-ui').style.display = 'none';
-            call.on('stream', (remoteStream) => {
-                document.getElementById('peer-video').srcObject = remoteStream;
-                document.getElementById('connection-label').innerText = "VINCULADO";
-                currentStreakCount++;
-                updateStorage();
-            });
-            call.on('close', () => closeCurrentSession());
-            call.on('error', () => closeCurrentSession());
-        }
+<button onclick="setVoiceEffect('man')">
+🧔 Hombre
+</button>
 
-        function triggerNext() {
-            if (activeSessionCall) {
-                const partnerId = activeSessionCall.peer;
-                blockList.push(partnerId);
-                // La lista negra se limpia parcialmente cada 30 segundos
-                setTimeout(() => { blockList = blockList.filter(id => id !== partnerId); }, 30000);
-                closeCurrentSession();
-            }
-            document.getElementById('searching-ui').style.display = 'flex';
-            networkingChannel.publish('buscando', { uid: peerConnector.id });
-        }
+<button onclick="setVoiceEffect('woman')">
+👩 Mujer
+</button>
 
-        /**
-         * UTILIDADES DE HARDWARE Y CONTROL
-         */
-        async function rotateCamera() {
-            activeFacingMode = (activeFacingMode === 'user') ? 'environment' : 'user';
-            localMediaStream.getTracks().forEach(track => track.stop());
-            
-            try {
-                localMediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: activeFacingMode }, 
-                    audio: true 
-                });
-                document.getElementById('local-view').srcObject = localMediaStream;
-                document.getElementById('local-view').style.transform = (activeFacingMode === 'user') ? "scaleX(-1)" : "scaleX(1)";
-                
-                // Si hay una llamada activa, reemplazamos el track de video en tiempo real
-                if (activeSessionCall && activeSessionCall.peerConnection) {
-                    const videoSender = activeSessionCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-                    if (videoSender) videoSender.replaceTrack(localMediaStream.getVideoTracks()[0]);
-                }
-            } catch (e) { console.warn("Error al rotar sensor de cámara."); }
-        }
+</div>
 
-        function toggleMicrophone() {
-            microphoneActive = !microphoneActive;
-            localMediaStream.getAudioTracks()[0].enabled = microphoneActive;
-            const btn = document.getElementById('audio-toggle');
-            btn.innerText = microphoneActive ? "🎤" : "🔇";
-            btn.style.background = microphoneActive ? "#2a2a2a" : "var(--danger)";
-        }
+</div>
 
-        function closeCurrentSession() {
-            if (activeSessionCall) activeSessionCall.close();
-            activeSessionCall = null;
-            document.getElementById('peer-video').srcObject = null;
-            document.getElementById('connection-label').innerText = "DESCONECTADO";
-        }
+<script>
 
-        function reportAction() {
-            alert("Usuario reportado. Cambiando de sala...");
-            triggerNext();
-        }
+/* ===== CONFIG ===== */
 
-        // Ejecución de arranque
-        initializeApp();
+const ABLY_SECRET = "HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs";
 
-    </script>
+const ably = new Ably.Realtime(ABLY_SECRET);
+const channel = ably.channels.get("recreo-match");
+
+/* ===== VARIABLES ===== */
+
+let peer;
+let localMediaStream;
+let activeCall;
+
+let audioContext;
+let micSource;
+let destination;
+let currentEffect;
+
+/* ===== INICIO ===== */
+
+async function initialize(){
+
+localMediaStream =
+await navigator.mediaDevices.getUserMedia({
+video:true,
+audio:true
+});
+
+document.getElementById("local-view")
+.srcObject = localMediaStream;
+
+/* VOICE SETUP */
+
+setupVoiceSystem();
+
+/* PEER */
+
+peer = new Peer();
+
+peer.on("call", call => {
+
+call.answer(localMediaStream);
+
+setupCall(call);
+
+});
+
+channel.subscribe("search", msg => {
+
+if(msg.data.id !== peer.id){
+
+startCall(msg.data.id);
+
+}
+
+});
+
+}
+
+initialize();
+
+/* ===== VOICE SYSTEM ===== */
+
+function setupVoiceSystem(){
+
+audioContext = new AudioContext();
+
+micSource =
+audioContext.createMediaStreamSource(localMediaStream);
+
+destination =
+audioContext.createMediaStreamDestination();
+
+micSource.connect(destination);
+
+localMediaStream =
+new MediaStream([
+...localMediaStream.getVideoTracks(),
+...destination.stream.getAudioTracks()
+]);
+
+}
+
+/* EFECTOS */
+
+function setVoiceEffect(type){
+
+if(currentEffect){
+
+micSource.disconnect();
+currentEffect.disconnect();
+
+}
+
+if(type==="normal"){
+
+micSource.connect(destination);
+
+return;
+
+}
+
+/* ROBOT */
+
+if(type==="robot"){
+
+const distortion =
+audioContext.createWaveShaper();
+
+distortion.curve =
+makeDistortionCurve(400);
+
+distortion.oversample="4x";
+
+micSource.connect(distortion);
+distortion.connect(destination);
+
+currentEffect = distortion;
+
+}
+
+/* HOMBRE */
+
+if(type==="man"){
+
+const filter =
+audioContext.createBiquadFilter();
+
+filter.type="lowpass";
+filter.frequency.value=500;
+
+micSource.connect(filter);
+filter.connect(destination);
+
+currentEffect = filter;
+
+}
+
+/* MUJER */
+
+if(type==="woman"){
+
+const filter =
+audioContext.createBiquadFilter();
+
+filter.type="highpass";
+filter.frequency.value=1200;
+
+micSource.connect(filter);
+filter.connect(destination);
+
+currentEffect = filter;
+
+}
+
+/* actualizar audio en llamada */
+
+if(activeCall){
+
+const sender =
+activeCall.peerConnection
+.getSenders()
+.find(s=>s.track.kind==="audio");
+
+if(sender){
+
+sender.replaceTrack(
+destination.stream
+.getAudioTracks()[0]
+);
+
+}
+
+}
+
+}
+
+/* DISTORSION */
+
+function makeDistortionCurve(amount){
+
+const k = amount;
+const n = 44100;
+const curve = new Float32Array(n);
+
+for(let i=0;i<n;i++){
+
+let x = i*2/n -1;
+
+curve[i] =
+(3+k)*x*20*Math.PI/180 /
+(Math.PI + k*Math.abs(x));
+
+}
+
+return curve;
+
+}
+
+/* ===== LLAMADAS ===== */
+
+function startCall(id){
+
+const call =
+peer.call(id, localMediaStream);
+
+setupCall(call);
+
+}
+
+function setupCall(call){
+
+activeCall = call;
+
+call.on("stream", stream => {
+
+document
+.getElementById("peer-video")
+.srcObject = stream;
+
+});
+
+call.on("close", ()=>{
+
+activeCall=null;
+
+});
+
+}
+
+/* ===== BOTONES ===== */
+
+function triggerNext(){
+
+if(activeCall){
+
+activeCall.close();
+
+}
+
+channel.publish("search",{
+id:peer.id
+});
+
+}
+
+function toggleMicrophone(){
+
+const audioTrack =
+localMediaStream
+.getAudioTracks()[0];
+
+audioTrack.enabled =
+!audioTrack.enabled;
+
+}
+
+function rotateCamera(){
+
+alert("Rotación simple aquí");
+
+}
+
+function reportUser(){
+
+alert("Usuario reportado");
+
+}
+
+</script>
+
 </body>
 </html>
